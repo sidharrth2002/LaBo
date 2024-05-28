@@ -7,7 +7,7 @@ We run our experiments using Python 3.9.13. You can install the required package
 ```
 conda create --name labo python=3.9.13
 conda activate labo
-conda install --file requirements.txt
+pip install -r requirements.txt
 ```
 You need to modify the source code of Apricot to run the submodular optimization. See details [here](https://github.com/YueYANG1996/LaBo/issues/1).
 
