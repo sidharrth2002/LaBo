@@ -311,6 +311,8 @@ class DataModule(pl.LightningDataModule):
         for mode in ['train', 'val', 'test']:
             cls2img, feat_save_dir, label_save_dir = splits[mode], self.img_feat_save_dir[mode], self.label_save_dir[mode]
 
+            # TODO: only for debugging, put back
+            # if feat_save_dir.exists():
             if not feat_save_dir.exists():
                 print('compute img feat for {}'.format(mode))
                 img_feat, label = self.compute_img_feat(cls2img, n_shots if mode == 'train' else 'all', clip_model, clip_ckpt)

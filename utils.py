@@ -11,14 +11,19 @@ import tqdm
 import numpy as np
 import clip
 from PIL import Image
+from medclip import MedCLIPModel, MedCLIPVisionModelViT
+from medclip import MedCLIPProcessor
+from PIL import Image
+
 """
 Start an experiment
 """
 
+
 def pre_exp(cfg_file, work_dir):
     """
-    Load the config from cfg_file, create a folder work_dir to save everything. 
-    The config file will be saved to work_dir as well. 
+    Load the config from cfg_file, create a folder work_dir to save everything.
+    The config file will be saved to work_dir as well.
     """
     cfg = Config.fromfile(cfg_file)
     mmcv.mkdir_or_exist(work_dir)
@@ -34,15 +39,15 @@ Helper function for Pickle, to avoid with context
 
 def pickle_load(f_name):
     try:
-        with open(f_name, 'rb') as f:
+        with open(f_name, "rb") as f:
             return pickle.load(f)
     except:
         print(f_name)
-        raise RuntimeError('cannot load file')
+        raise RuntimeError("cannot load file")
 
 
 def pickle_dump(obj, f_name):
-    with open(f_name, 'wb') as f:
+    with open(f_name, "wb") as f:
         pickle.dump(obj, f)
 
 
@@ -58,24 +63,33 @@ def batchify_run(process_fn, data_lst, res, batch_size, use_tqdm=False):
     if use_tqdm:
         iterator = tqdm.tqdm(iterator)
     for i in iterator:
-        batch_data = data_lst[i * batch_size:(i + 1) * batch_size]
+        batch_data = data_lst[i * batch_size : (i + 1) * batch_size]
         batch_res = process_fn(batch_data)
-        res[i * batch_size:(i + 1) * batch_size] = batch_res
+        res[i * batch_size : (i + 1) * batch_size] = batch_res
         del batch_res
 
 
-def prepare_img_feat(img_names,
-                     ckpt_path=None,
-                     save_path=None,
-                     clip_model_name='ViT-B/32'):
+def prepare_img_feat(
+    img_names, ckpt_path=None, save_path=None, clip_model_name="ViT-B/32"
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model, preprocess = clip.load(clip_model_name, device=device)
 
-    if clip_model_name == 'ViT-B/32' or clip_model_name == 'ViT-B/16':
+    if clip_model_name == "medclip":
+        model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
+        model.from_pretrained()
+        if device == "cuda":
+            model.cuda()
+        _, preprocess = clip.load("ViT-B/32", device=device)
+    else:
+        model, preprocess = clip.load(clip_model_name, device=device)
+
+    if clip_model_name == "medclip":
         latent_dim = 512
-    elif clip_model_name == 'ViT-L/14':
+    elif clip_model_name == "ViT-B/32" or clip_model_name == "ViT-B/16":
+        latent_dim = 512
+    elif clip_model_name == "ViT-L/14":
         latent_dim = 768
-    elif 'RN' in clip_model_name:
+    elif "RN" in clip_model_name:
         latent_dim = 1024
 
     if ckpt_path:
@@ -84,11 +98,56 @@ def prepare_img_feat(img_names,
     res = torch.empty((len(img_names), latent_dim))
 
     def process_img(img_names):
-        img_tensor = torch.cat([preprocess(Image.open('{}'.format(img_name)))\
-                .unsqueeze(0).to(device) \
-                for img_name in img_names])
+        if clip_model_name == "medbclip":
+            print(
+                preprocess(
+                    images=Image.open("{}".format(img_names[0])),
+                    text=[
+                        "lungs remain severely hyperinflated with upper lobe emphysema",
+                        "opacity left costophrenic angle is new since prior exam",
+                    ],
+                    return_tensors="pt",
+                    padding=True
+                )
+            )
+            print(
+                preprocess(
+                    images=Image.open("{}".format(img_names[0])),
+                    text=[
+                        "lungs remain severely hyperinflated with upper lobe emphysema",
+                        "opacity left costophrenic angle is new since prior exam ___ represent some loculated fluid cavitation unlikely",
+                    ],
+                    return_tensors="pt",
+                    padding=True
+                )["pixel_values"].shape
+            )
+
+            img_tensor = torch.cat(
+                [
+                    preprocess(
+                        images=Image.open("{}".format(img_name)),
+                        text="",
+                        return_tensors="pt",
+                    )["pixel_values"][0]
+                    for img_name in img_names
+                ]
+            )
+        else:
+            print(preprocess(Image.open("{}".format(img_names[0]))).unsqueeze(0).shape)
+            img_tensor = torch.cat(
+                [
+                    preprocess(Image.open("{}".format(img_name)))
+                    .unsqueeze(0)
+                    .to(device)
+                    for img_name in img_names
+                ]
+            )
+
+        print("img_feat", img_tensor.shape)
+
         with torch.no_grad():
             img_feat = model.encode_image(img_tensor)
+
         return img_feat
 
     batchify_run(process_img, img_names, res, 2048, use_tqdm=True)
@@ -97,13 +156,21 @@ def prepare_img_feat(img_names,
     return res
 
 
-def prepare_img_feat_from_processed(img_names,
-                                    ckpt_path=None,
-                                    save_path=None,
-                                    latent_dim=512,
-                                    clip_model_name='ViT-B/32'):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model, preprocess = clip.load("{}".format(clip_model_name), device=device)
+def prepare_img_feat_from_processed(
+    img_names,
+    ckpt_path=None,
+    save_path=None,
+    latent_dim=512,
+    clip_model_name="ViT-B/32",
+):
+    if clip_model_name == "medclip":
+        model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
+        model.from_pretrained()
+        model.cuda()
+        preprocess = MedCLIPProcessor()
+    else:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model, preprocess = clip.load("{}".format(clip_model_name), device=device)
     if ckpt_path:
         ckpt = torch.load(ckpt_path)
         model.load_state_dict(ckpt)
@@ -111,11 +178,11 @@ def prepare_img_feat_from_processed(img_names,
 
     def process_img(img_names):
         img_lst = [pickle_load(img_name) for img_name in img_names]
-        print('pickle load')
+        print("pickle load")
         img_tensor = torch.stack(img_lst)
-        print('form tensor')
+        print("form tensor")
         img_tensor = img_tensor.to(device)
-        print('to gpu')
+        print("to gpu")
         with torch.no_grad():
             img_feat = model.encode_image(img_tensor)
         return img_feat
@@ -126,15 +193,27 @@ def prepare_img_feat_from_processed(img_names,
     return res
 
 
-def prepare_txt_feat(prompts, ckpt_path=None, save_path=None, clip_model_name='ViT-B/32'):
-    if clip_model_name == 'ViT-B/32' or clip_model_name == 'ViT-B/16':
-        latent_dim = 512
-    elif clip_model_name == 'ViT-L/14':
-        latent_dim = 768
-    elif 'RN' in clip_model_name:
-        latent_dim = 1024
+def prepare_txt_feat(
+    prompts, ckpt_path=None, save_path=None, clip_model_name="ViT-B/32"
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model, preprocess = clip.load("{}".format(clip_model_name), device=device)
+
+    if clip_model_name == "medclip":
+        model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
+        model.from_pretrained()
+        model.cuda()
+        preprocess = MedCLIPProcessor()
+    else:
+        model, preprocess = clip.load("{}".format(clip_model_name), device=device)
+
+    if clip_model_name == "medclip":
+        latent_dim = 512
+    elif clip_model_name == "ViT-B/32" or clip_model_name == "ViT-B/16":
+        latent_dim = 512
+    elif clip_model_name == "ViT-L/14":
+        latent_dim = 768
+    elif "RN" in clip_model_name:
+        latent_dim = 1024
 
     if ckpt_path:
         ckpt = torch.load(ckpt_path)
@@ -142,8 +221,15 @@ def prepare_txt_feat(prompts, ckpt_path=None, save_path=None, clip_model_name='V
     res = torch.empty((len(prompts), latent_dim))
 
     def process_txt(prompts):
-        token = torch.cat([clip.tokenize(prompt)
-                           for prompt in prompts]).to(device)
+        if clip_model_name == "medclip":
+            print(type(prompts))
+            token = preprocess(
+                text=prompts.tolist(), 
+                return_tensors="pt", 
+                padding=True
+            )["input_ids"]
+        else:
+            token = torch.cat([clip.tokenize(prompt) for prompt in prompts]).to(device)
         with torch.no_grad():
             txt_feat = model.encode_text(token)
         return txt_feat
@@ -153,19 +239,21 @@ def prepare_txt_feat(prompts, ckpt_path=None, save_path=None, clip_model_name='V
         torch.save(res, save_path)
     return res
 
-def prepare_txt_token(prompts, ckpt_path=None, save_path=None, latent_dim=77,clip_model_name='ViT-B/32'):
+
+def prepare_txt_token(
+    prompts, ckpt_path=None, save_path=None, latent_dim=77, clip_model_name="ViT-B/32"
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = clip.load("{}".format(clip_model_name), device=device)
 
     if ckpt_path:
         ckpt = torch.load(ckpt_path)
-        model.load_state_dict(ckpt['model_state_dict'])
+        model.load_state_dict(ckpt["model_state_dict"])
 
     res = torch.empty((len(prompts), latent_dim))
 
     def process_txt(prompts):
-        token = torch.cat([clip.tokenize(prompt)
-                           for prompt in prompts]).to(device)
+        token = torch.cat([clip.tokenize(prompt) for prompt in prompts]).to(device)
         return token
 
     batchify_run(process_txt, prompts, res, 2048, use_tqdm=True)

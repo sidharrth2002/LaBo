@@ -33,4 +33,5 @@ lambda_l1 = 0.01
 lambda_div = 0.005
 
 # CLIP Backbone
-clip_model = 'ViT-L/14'
+# clip_model = 'ViT-L/14'
+clip_model = 'medclip'
