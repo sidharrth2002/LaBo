@@ -294,7 +294,7 @@ def asso_opt_main(cfg):
                        project=proj_name,
                        config=cfg._cfg_dict)
 
-        trainer = pl.Trainer(gpus=1,
+        trainer = pl.Trainer(devices=1,
                              callbacks=[checkpoint_callback],
                              logger=wandb_logger,
                              check_val_every_n_epoch=check_interval,

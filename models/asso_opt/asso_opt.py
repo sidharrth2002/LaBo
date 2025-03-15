@@ -65,13 +65,13 @@ class AssoConcept(pl.LightningModule):
             # self.weight_mask = cls_sim @ self.init_weight
 
         self.asso_mat = th.nn.Parameter(self.init_weight.clone())
-        self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
-        self.valid_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
+        self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
+        self.valid_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
         # self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, average='macro')
-        self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
+        self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
         self.all_y = []
         self.all_pred = []
-        self.confmat = torchmetrics.ConfusionMatrix(self.cfg.num_cls)
+        self.confmat = torchmetrics.ConfusionMatrix(num_classes=self.cfg.num_cls, task='multiclass')
         self.save_hyperparameters()
 
 
@@ -101,6 +101,7 @@ class AssoConcept(pl.LightningModule):
         pred = 100 * sim  # scaling as standard CLIP does
 
         # classification accuracy
+        # TODO: update this for multi-label classification
         cls_loss = F.cross_entropy(pred, label)
         if th.isnan(cls_loss):
             import pdb; pdb.set_trace() # yapf: disable
