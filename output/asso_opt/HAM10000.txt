@@ -1,0 +1,4 @@
+HAM10000_8shot_fac	57.51
+HAM10000_8shot_fac	57.51
+HAM10000_allshot_fac	5.57
+HAM10000_8shot_fac	57.51

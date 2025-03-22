@@ -253,7 +253,8 @@ def asso_opt_main(cfg):
         ckpt_path = cfg.ckpt_path
         print('load ckpt: {}'.format(ckpt_path))
         model = AssoConceptFast.load_from_checkpoint(str(ckpt_path))
-        trainer = pl.Trainer(gpus=1)
+        # trainer = pl.Trainer(gpus=1)
+        trainer = pl.Trainer(devices=1)
         trainer.test(model, data_module)
         test_acc = round(100 * float(model.total_test_acc), 2)
         dataset = cfg.ckpt_path.split("/")[-3]

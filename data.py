@@ -290,6 +290,9 @@ class DataModule(pl.LightningDataModule):
     def get_img_n_shot(self, cls2img, n_shots):
         labels = []
         all_img_paths = []
+        
+        # print(f"self.cls_names: {self.cls_names}")
+        
         for cls_name, img_names in cls2img.items():
             if n_shots != 'all': img_names = random.sample(img_names, n_shots) # random sample n shot images
             labels.extend([self.cls_names.index(cls_name)] * len(img_names))
@@ -298,6 +301,7 @@ class DataModule(pl.LightningDataModule):
 
 
     def compute_img_feat(self, cls2img, n_shots, clip_model, clip_ckpt):
+        # print(cls2img)
         all_img_paths, labels = self.get_img_n_shot(cls2img, n_shots)
         img_feat = utils.prepare_img_feat(all_img_paths,
                                           clip_model_name=clip_model,
@@ -306,6 +310,9 @@ class DataModule(pl.LightningDataModule):
 
 
     def prepare_img_feat(self, splits, n_shots, clip_model, clip_ckpt):
+        # TODO: set this flag
+        self.force_compute = False
+        
         self.img_feat = {}
         self.label = {}
         for mode in ['train', 'val', 'test']:
@@ -313,7 +320,7 @@ class DataModule(pl.LightningDataModule):
 
             # TODO: only for debugging, put back
             # if feat_save_dir.exists():
-            if not feat_save_dir.exists():
+            if not feat_save_dir.exists() or self.force_compute:
                 print('compute img feat for {}'.format(mode))
                 img_feat, label = self.compute_img_feat(cls2img, n_shots if mode == 'train' else 'all', clip_model, clip_ckpt)
                 th.save(img_feat, feat_save_dir)

@@ -79,7 +79,12 @@ def prepare_img_feat(
         model.from_pretrained()
         if device == "cuda":
             model.cuda()
+        
+        print(model)
+        
         _, preprocess = clip.load("ViT-B/32", device=device)
+
+        # preprocess = MedCLIPProcessor()
     else:
         model, preprocess = clip.load(clip_model_name, device=device)
 
@@ -98,40 +103,40 @@ def prepare_img_feat(
     res = torch.empty((len(img_names), latent_dim))
 
     def process_img(img_names):
-        if clip_model_name == "medbclip":
-            print(
-                preprocess(
-                    images=Image.open("{}".format(img_names[0])),
-                    text=[
-                        "lungs remain severely hyperinflated with upper lobe emphysema",
-                        "opacity left costophrenic angle is new since prior exam",
-                    ],
-                    return_tensors="pt",
-                    padding=True
-                )
-            )
-            print(
-                preprocess(
-                    images=Image.open("{}".format(img_names[0])),
-                    text=[
-                        "lungs remain severely hyperinflated with upper lobe emphysema",
-                        "opacity left costophrenic angle is new since prior exam ___ represent some loculated fluid cavitation unlikely",
-                    ],
-                    return_tensors="pt",
-                    padding=True
-                )["pixel_values"].shape
-            )
-
+        if clip_model_name == "medclip":
+            print("Running MedCLIP preprocess")
             img_tensor = torch.cat(
                 [
-                    preprocess(
-                        images=Image.open("{}".format(img_name)),
-                        text="",
-                        return_tensors="pt",
-                    )["pixel_values"][0]
+                    preprocess(Image.open("{}".format(img_name)))
+                    .unsqueeze(0)
+                    .to(device)
                     for img_name in img_names
                 ]
             )
+            # print(
+            #     preprocess(
+            #         images=Image.open("{}".format(img_names[0])),
+            #         return_tensors="pt",
+            #         padding=True
+            #     )
+            # )
+            # print(
+            #     preprocess(
+            #         images=Image.open("{}".format(img_names[0])),
+            #         return_tensors="pt",
+            #         padding=True
+            #     )["pixel_values"].shape
+            # )
+            # img_tensor = torch.cat(
+            #     [
+            #         preprocess(
+            #             images=Image.open("{}".format(img_name)),
+            #             # text="",
+            #             return_tensors="pt",
+            #         )["pixel_values"][0]
+            #         for img_name in img_names
+            #     ]
+            # )
         else:
             print(preprocess(Image.open("{}".format(img_names[0]))).unsqueeze(0).shape)
             img_tensor = torch.cat(
@@ -150,7 +155,13 @@ def prepare_img_feat(
 
         return img_feat
 
-    batchify_run(process_img, img_names, res, 2048, use_tqdm=True)
+    # batchify_run(process_img, img_names, res, 2048, use_tqdm=True)
+    # TODO: reduce batch size here
+    
+    print("before running batchify_run")
+    batchify_run(process_img, img_names, res, 512, use_tqdm=True)
+    print("after running batchify_run")
+
     if save_path:
         torch.save(res, save_path)
     return res

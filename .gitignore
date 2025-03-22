@@ -10,3 +10,4 @@ lightning_logs/
 datasets/**
 pretrained/**
 notebooks/pretrained/**
+notebooks/checkpoints/**

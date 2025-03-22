@@ -165,12 +165,17 @@ class AssoConcept(pl.LightningModule):
         return loss
 
 
-    def test_epoch_end(self, outputs):
+    # def test_epoch_end(self, outputs):
+    #     all_y = th.hstack(self.all_y)
+    #     all_pred = th.hstack(self.all_pred)
+    #     self.total_test_acc = self.test_acc(all_pred, all_y)
+    #     pass
+
+    def on_test_epoch_end(self):
         all_y = th.hstack(self.all_y)
         all_pred = th.hstack(self.all_pred)
         self.total_test_acc = self.test_acc(all_pred, all_y)
         pass
-
 
     def on_predict_epoch_start(self):
         self.num_pred = 4
@@ -231,3 +236,5 @@ class AssoConceptFast(AssoConcept):
     def forward(self, dot_product):
         mat = self._get_weight_mat()
         return dot_product @ mat.t()
+    
+# def AssoConceptMoE
