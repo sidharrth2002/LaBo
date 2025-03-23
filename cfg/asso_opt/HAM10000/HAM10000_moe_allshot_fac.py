@@ -1,6 +1,6 @@
 _base_ = 'HAM10000_base.py'
 n_shots = "all"
-data_root = 'exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac'
+data_root = 'exp/asso_opt/HAM10000/HAM10000_MOE_allshot_fac'
 lr = 5e-4
 bs = 256
 
@@ -18,7 +18,10 @@ concept2cls_path = concept_root + 'concept2cls.npy'
 cls_name_path = concept_root + 'cls_names.npy'
 num_cls = 7
 
+img_feat_dim = 512
+hidden_dim = 256
+
 # run mixture of experts
-model_type="single_expert"
+model_type="moe"
 
 clip_model = 'biomedclip'

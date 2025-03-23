@@ -37,14 +37,15 @@ class AssoConceptMoE(pl.LightningModule):
                 th.nn.init.kaiming_normal_(self.init_weight_specialist)
 
     def init_weight_concept_generalist(self, concept2cls):
+        print("Initialising generalist concept weights")
         self.init_weight_generalist = th.zeros(
             (self.cfg.num_cls, len(self.select_idx_generalist))
         )
-
         if self.cfg.use_rand_init:
             th.nn.init.kaiming_normal_(self.init_weight_generalist)
         else:
             self.init_weight_generalist.scatter_(0, concept2cls, self.cfg.init_val)
+        # print(self.init_weight_generalist)
 
         if "cls_name_init" in self.cfg and self.cfg.cls_name_init != "none":
             if self.cfg.cls_name_init == "replace":
@@ -84,7 +85,7 @@ class AssoConceptMoE(pl.LightningModule):
         select_idx_path_generalist = self.data_root.joinpath("select_idx.pth")
 
         concept_feat_path_specialist = self.data_root.joinpath(
-            "concepts_feat_specialist_{}.pth".format(
+            "concepts_feat_{}_specialist.pth".format(
                 self.cfg.clip_model.replace("/", "-")
             )
         )
@@ -176,11 +177,16 @@ class AssoConceptMoE(pl.LightningModule):
             self.init_weight_concept_generalist(self.concept2cls_generalist)
         else:
             self.init_weight_generalist = init_weight_generalist
-            
+
         if init_weight_specialist is None:
             self.init_weight_concept_specialist(self.concept2cls_specialist)
         else:
             self.init_weight_specialist = init_weight_specialist
+
+        print(f"Shape of init_weight_generalist: {self.init_weight_generalist.shape}")
+        print(f"Shape of init_weight_specialist: {self.init_weight_specialist.shape}")
+        
+        # os._exit(1)
 
         if (
             "cls_sim_prior" in self.cfg
@@ -258,9 +264,12 @@ class AssoConceptMoE(pl.LightningModule):
 
         # initialise the gating network
         self.gating_network = th.nn.Sequential(
-            th.nn.Linear(cfg.img_feat_dim, cfg.hidden_dim),
-            th.nn.ReLU(),
-            th.nn.Linear(cfg.hidden_dim, 1),
+            th.nn.LayerNorm(self.cfg.img_feat_dim),
+            th.nn.Linear(self.cfg.img_feat_dim, self.cfg.hidden_dim),
+            # th.nn.ReLU(),
+            th.nn.LeakyReLU(negative_slope=0.01),
+            th.nn.Dropout(p=0.1),
+            th.nn.Linear(self.cfg.hidden_dim, 1),
             th.nn.Sigmoid(),
         )
 
@@ -320,11 +329,11 @@ class AssoConceptMoE(pl.LightningModule):
     #     return sim
 
     def training_step(self, train_batch, batch_idx):
-        image, label = train_batch
+        image, generalist_dot_product, specialist_dot_product, label = train_batch
 
-        print(f"Data Root: {self.cfg.data_root}")
+        # print(f"Data Root: {self.cfg.data_root}")
 
-        sim = self.forward(image)
+        sim = self.forward(image, generalist_dot_product, specialist_dot_product)
         pred = 100 * sim  # scaling as standard CLIP does
         # pred = sim
 
@@ -369,8 +378,10 @@ class AssoConceptMoE(pl.LightningModule):
         )
 
         self.log("training_loss", cls_loss)
-        self.log("mean l1 norm generalist", row_l1_norm_generalist)
-        self.log("mean l1 norm specialist", row_l1_norm_specialist)
+        
+        # NOTE: I added the mean(), may not be correct here
+        self.log("mean l1 norm generalist", row_l1_norm_generalist.mean())
+        self.log("mean l1 norm specialist", row_l1_norm_specialist.mean())
         self.log("div", div)
 
         # run sigmoid then threshold pred
@@ -402,8 +413,10 @@ class AssoConceptMoE(pl.LightningModule):
         if not self.cfg.DEBUG:
             if self.global_step == 0 and not self.cfg.DEBUG:
                 wandb.define_metric("val_acc", summary="max")
-        image, y = batch
-        sim = self.forward(image)
+        print(batch)
+        # hack to pass the sanity check
+        image, generalist_dot_product, specialist_dot_product, y = batch
+        sim = self.forward(image, generalist_dot_product, specialist_dot_product)
         pred = 100 * sim
         if "XRAY" in self.cfg.data_root:
             loss = F.binary_cross_entropy_with_logits(pred, y.float())
@@ -531,22 +544,28 @@ class AssoConceptMoEFast(AssoConceptMoE):
         print("running fast forward generalist")
         mat = self._get_weight_mat_generalist()
         res = dot_product @ mat.t()
-        print(f"Res: {res}")
+        # print(f"Res: {res}")
         return res
 
     def forward_specialist(self, dot_product):
         mat = self._get_weight_mat_specialist()
         res = dot_product @ mat.t()
-        print(f"Res: {res}")
+        # print(f"Res: {res}")
         return res
 
-    def forward(self, dot_product):
+    def forward(self, image, generalist_dot_product, specialist_dot_product):
         print("running fast")
-        mat = self._get_weight_mat()
-        res = dot_product @ mat.t()
-        th.set_printoptions(threshold=10000)
-        print(f"Res: {res}")
-        return res
+        # print(generalist_dot_product)
+        # print(specialist_dot_product)
+        generalist_sim = self.forward_generalist(generalist_dot_product)
+        specialist_sim = self.forward_specialist(specialist_dot_product)
+        
+        gate = self.gating_network(image).view(-1, 1)
+        # print(f"Gate: {gate}")
+        
+        final_sim = gate * specialist_sim + (1 - gate) * generalist_sim
+        
+        return final_sim
 
     # def forward(self, img_feat):
     #     generalist_sim = self.forward_generalist(img_feat)

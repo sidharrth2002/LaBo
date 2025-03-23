@@ -63,15 +63,20 @@ class DotProductDatasetMoE(Dataset):
     """
     def __init__(self, img_feat, txt_feat_generalist, txt_feat_specialist, label, on_gpu):
         print("Using MoE dot product dataset")
+        self.img_feat = img_feat
         self.dot_product_generalist = (img_feat @ txt_feat_generalist.t())
+        self.dot_product_generalist.cuda() if on_gpu else self.dot_product_generalist
+        
         self.dot_product_specialist = (img_feat @ txt_feat_specialist.t())
+        self.dot_product_specialist.cuda() if on_gpu else self.dot_product_specialist
+        
         self.labels = label.cuda() if on_gpu else label
     
     def __len__(self):
         return len(self.dot_product_generalist)
 
     def __getitem__(self, idx):
-        return self.dot_product_generalist[idx], self.dot_product_specialist[idx], self.labels[idx]
+        return self.img_feat[idx], self.dot_product_generalist[idx], self.dot_product_specialist[idx], self.labels[idx]
 
 
 class Dataset_with_name(Dataset):
@@ -294,7 +299,7 @@ class DataModule(pl.LightningDataModule):
         else:
             print('not generating again, just going to load')
             print('select idx save dir', self.select_idx_save_dir)
-            os._exit(0)
+            # os._exit(0)
             self.select_idx = th.load(self.select_idx_save_dir)
     
         print(f"Selected indices: {self.select_idx}")
@@ -323,7 +328,7 @@ class DataModule(pl.LightningDataModule):
             print('not generating again, just going to load')
             print('concept_feat save dir', self.concept_feat_save_dir)
             self.concept_feat = th.load(self.concept_feat_save_dir)
-            os._exit(1)
+            # os._exit(1)
 
         if self.use_txt_norm:
             self.concept_feat /= self.concept_feat.norm(dim=-1, keepdim=True)
