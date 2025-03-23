@@ -1,3 +1,4 @@
+import os
 import torchmetrics
 import wandb
 import torch as th
@@ -65,13 +66,24 @@ class AssoConcept(pl.LightningModule):
             # self.weight_mask = cls_sim @ self.init_weight
 
         self.asso_mat = th.nn.Parameter(self.init_weight.clone())
-        self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
-        self.valid_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
-        # self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, average='macro')
-        self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
+        
+        print(f"Num labels is: {cfg.num_cls}")
+        
+        if 'XRAY' in self.cfg.data_root:
+            # we're doing multi-label classification
+            self.train_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            self.valid_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            self.test_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+        else:        
+            self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
+            self.valid_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
+            # self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, average='macro')
+            self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
         self.all_y = []
         self.all_pred = []
         self.confmat = torchmetrics.ConfusionMatrix(num_classes=self.cfg.num_cls, task='multiclass')
+        
+        self.clip_model = self.cfg.clip_model
         self.save_hyperparameters()
 
 
@@ -91,18 +103,37 @@ class AssoConcept(pl.LightningModule):
         mat = self._get_weight_mat()
         cls_feat = mat @ self.concepts
         sim = img_feat @ cls_feat.t()
+        th.set_printoptions(threshold=10000)
+        print(f"Sim: {sim}")
         return sim
 
 
     def training_step(self, train_batch, batch_idx):
         image, label = train_batch
 
+        print(f"Data Root: {self.cfg.data_root}")
+
         sim = self.forward(image)
         pred = 100 * sim  # scaling as standard CLIP does
+        # pred = sim
 
         # classification accuracy
         # TODO: update this for multi-label classification
-        cls_loss = F.cross_entropy(pred, label)
+        # print(pred.shape)
+        # print(label.shape)
+        
+        # print(f"Pred: {pred}")
+        # print(f"Label: {label}")
+
+        if 'XRAY' in self.cfg.data_root:
+            # we need to do multi-label classification
+            # print('doing binary cross entropy with logits')
+            cls_loss = F.binary_cross_entropy_with_logits(pred, label.float())
+        else:
+            cls_loss = F.cross_entropy(pred, label)
+            
+        print(f"cls_loss: {cls_loss}")
+        
         if th.isnan(cls_loss):
             import pdb; pdb.set_trace() # yapf: disable
 
@@ -121,7 +152,16 @@ class AssoConcept(pl.LightningModule):
         self.log('mean l1 norm', row_l1_norm)
         self.log('div', div)
 
-        self.train_acc(pred, label)
+        # run sigmoid then threshold pred
+        if 'XRAY' in self.cfg.data_root:
+            print('doing sigmoid then threshold')
+            pred_label = (th.sigmoid(pred) > 0.5).float()
+            print(pred_label)
+        else:
+            pred_label = pred
+
+        self.train_acc(pred_label, label)
+        print(f"train accuracy: {self.train_acc(pred_label, label)}")
         self.log('train_acc', self.train_acc, on_step=False, on_epoch=True)
         final_loss = cls_loss
         if self.cfg.use_l1_loss:
@@ -136,14 +176,18 @@ class AssoConcept(pl.LightningModule):
         return opt
 
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx):        
         if not self.cfg.DEBUG:
             if self.global_step == 0 and not self.cfg.DEBUG:
                 wandb.define_metric('val_acc', summary='max')
         image, y = batch
         sim = self.forward(image)
         pred = 100 * sim
-        loss = F.cross_entropy(pred, y)
+        if 'XRAY' in self.cfg.data_root:
+            loss = F.binary_cross_entropy_with_logits(pred, y.float())
+        else:
+            loss = F.cross_entropy(pred, y)
+    
         self.log('val_loss', loss)
         self.valid_acc(pred, y)
         self.log('val_acc', self.valid_acc, on_step=False, on_epoch=True)
@@ -151,6 +195,7 @@ class AssoConcept(pl.LightningModule):
 
 
     def test_step(self, batch, batch_idx):
+        print('running test step')
         image, y = batch
         sim = self.forward(image)
         pred = 100 * sim
@@ -161,6 +206,7 @@ class AssoConcept(pl.LightningModule):
         self.all_pred.append(y_pred)
         self.log('test_loss', loss)
         self.test_acc(pred, y)
+        print(f"test accuracy: {self.test_acc(pred, y)}")
         self.log('test_acc', self.test_acc, on_step=False, on_epoch=True)
         return loss
 
@@ -234,7 +280,11 @@ class AssoConcept(pl.LightningModule):
 class AssoConceptFast(AssoConcept):
 
     def forward(self, dot_product):
+        print('running fast')
         mat = self._get_weight_mat()
-        return dot_product @ mat.t()
+        res = dot_product @ mat.t()
+        th.set_printoptions(threshold=10000)
+        print(f"Res: {res}")
+        return res
     
 # def AssoConceptMoE

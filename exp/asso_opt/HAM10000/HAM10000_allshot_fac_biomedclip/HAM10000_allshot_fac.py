@@ -1,6 +1,6 @@
 use_mi = True
 group_select = True
-clip_model = 'ViT-B/16'
+clip_model = 'biomedclip'
 use_rand_init = False
 init_val = 1.0
 asso_act = 'softmax'

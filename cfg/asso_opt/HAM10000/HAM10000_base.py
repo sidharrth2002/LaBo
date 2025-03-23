@@ -21,8 +21,8 @@ num_concept = num_cls * 50
 
 # weight matrix fitting
 lr = 1e-4
-# max_epochs = 10000
-max_epochs=100
+max_epochs = 1500
+# max_epochs=100
 
 # weight matrix
 use_rand_init = False
@@ -34,5 +34,6 @@ lambda_l1 = 0.01
 lambda_div = 0.005
 
 # CLIP Backbone
-# clip_model = 'ViT-L/14'
-clip_model = 'medclip'
+clip_model = 'ViT-B/16'
+# clip_model = 'medclip'
+# clip_model = 'biomedclip'

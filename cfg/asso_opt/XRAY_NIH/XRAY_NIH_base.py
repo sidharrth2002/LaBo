@@ -10,7 +10,7 @@ img_ext = ''
 raw_sen_path = concept_root + 'concepts_raw.npy'
 concept2cls_path = concept_root + 'concept2cls.npy'
 cls_name_path = concept_root + 'cls_names.npy'
-num_cls = 7
+num_cls = 14
 
 ## data loader
 bs = 32
@@ -33,4 +33,7 @@ lambda_l1 = 0.01
 lambda_div = 0.005
 
 # CLIP Backbone
-clip_model = 'ViT-L/14'
+# clip_model = 'ViT-L/14'
+# clip_model = 'ViT-B/16'
+# clip_model = 'medclip'
+clip_model = 'biomedclip'

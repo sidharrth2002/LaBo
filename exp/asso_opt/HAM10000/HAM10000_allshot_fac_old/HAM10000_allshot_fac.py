@@ -1,6 +1,6 @@
 use_mi = True
 group_select = True
-clip_model = 'ViT-B/16'
+clip_model = 'biomedclip'
 use_rand_init = False
 init_val = 1.0
 asso_act = 'softmax'
@@ -29,6 +29,6 @@ bs = 256
 on_gpu = True
 num_concept = 350
 lr = 0.0005
-max_epochs = 1500
+max_epochs = 10000
 n_shots = 'all'
 data_root = 'exp/asso_opt/HAM10000/HAM10000_allshot_fac'

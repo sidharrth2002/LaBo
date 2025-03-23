@@ -14,6 +14,7 @@ from PIL import Image
 from medclip import MedCLIPModel, MedCLIPVisionModelViT
 from medclip import MedCLIPProcessor
 from PIL import Image
+from open_clip import create_model_from_pretrained, get_tokenizer
 
 """
 Start an experiment
@@ -85,10 +86,17 @@ def prepare_img_feat(
         _, preprocess = clip.load("ViT-B/32", device=device)
 
         # preprocess = MedCLIPProcessor()
+    elif clip_model_name == "biomedclip":
+        model, preprocess = create_model_from_pretrained('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
+        model = model.to(device)
+        tokenizer = get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
+    
     else:
         model, preprocess = clip.load(clip_model_name, device=device)
 
     if clip_model_name == "medclip":
+        latent_dim = 512
+    elif clip_model_name == "biomedclip":
         latent_dim = 512
     elif clip_model_name == "ViT-B/32" or clip_model_name == "ViT-B/16":
         latent_dim = 512
@@ -99,6 +107,7 @@ def prepare_img_feat(
 
     if ckpt_path:
         ckpt = torch.load(ckpt_path)
+        print(ckpt)
         model.load_state_dict(ckpt)
     res = torch.empty((len(img_names), latent_dim))
 
@@ -137,6 +146,9 @@ def prepare_img_feat(
             #         for img_name in img_names
             #     ]
             # )
+        elif clip_model_name == "biomedclip":
+            print("Running BiomedCLIP preprocess")
+            img_tensor = torch.stack([preprocess(Image.open("{}".format(img_name))) for img_name in img_names]).to(device)
         else:
             print(preprocess(Image.open("{}".format(img_names[0]))).unsqueeze(0).shape)
             img_tensor = torch.cat(
@@ -148,10 +160,10 @@ def prepare_img_feat(
                 ]
             )
 
-        print("img_feat", img_tensor.shape)
-
         with torch.no_grad():
             img_feat = model.encode_image(img_tensor)
+
+        print("img_feat", img_feat.shape)
 
         return img_feat
 
@@ -179,6 +191,9 @@ def prepare_img_feat_from_processed(
         model.from_pretrained()
         model.cuda()
         preprocess = MedCLIPProcessor()
+    elif clip_model_name == "biomedclip":
+        model, preprocess = create_model_from_pretrained('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
+        tokenizer = get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model, preprocess = clip.load("{}".format(clip_model_name), device=device)
@@ -214,10 +229,16 @@ def prepare_txt_feat(
         model.from_pretrained()
         model.cuda()
         preprocess = MedCLIPProcessor()
+    elif clip_model_name == "biomedclip":
+        model, preprocess = create_model_from_pretrained('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
+        model.cuda()
+        tokenizer = get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
     else:
         model, preprocess = clip.load("{}".format(clip_model_name), device=device)
 
     if clip_model_name == "medclip":
+        latent_dim = 512
+    elif clip_model_name == "biomedclip":
         latent_dim = 512
     elif clip_model_name == "ViT-B/32" or clip_model_name == "ViT-B/16":
         latent_dim = 512
@@ -239,6 +260,8 @@ def prepare_txt_feat(
                 return_tensors="pt", 
                 padding=True
             )["input_ids"]
+        elif clip_model_name == "biomedclip":
+            token = tokenizer(prompts, context_length=256).to(device)
         else:
             token = torch.cat([clip.tokenize(prompt) for prompt in prompts]).to(device)
         with torch.no_grad():
