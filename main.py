@@ -161,8 +161,9 @@ def save_npy_files(class2concepts, save_dir):
 
 def asso_opt_main(cfg):
     from models.asso_opt.asso_opt import AssoConcept, AssoConceptFast
+    from models.asso_opt.asso_opt_moe import AssoConceptMoE, AssoConceptMoEFast
     from models.select_concept.select_algo import mi_select, clip_score_select, group_mi_select, group_clip_select, submodular_select, random_select
-    from data import DataModule, DotProductDataModule
+    from data import DataModule, DotProductDataModule, DotProductDataModuleMoE
     import random
     proj_name = cfg.proj_name
 
@@ -195,6 +196,8 @@ def asso_opt_main(cfg):
     
     random.seed(1) # seed matches first run of linear probe
 
+    print(f"Using CLIP model: {cfg.clip_model}")
+
     try: print(cfg.submodular_weights)
     except: cfg.submodular_weights = "none"
     if cfg.proj_name == "ImageNet" and (cfg.n_shots == "all" or cfg.n_shots == 16):
@@ -222,21 +225,46 @@ def asso_opt_main(cfg):
             remove_cls_name=cfg.remove_cls_name if 'remove_cls_name' in cfg else True,
             submodular_weights=cfg.submodular_weights
             )
-    
+    elif cfg.model_type == "moe":
+        # doing mixture of experts
+        print("use dot product Mixture of Experts dataloader")
+        data_module = DotProductDataModuleMoE(
+            num_concept=cfg.num_concept,
+            data_root=cfg.data_root,
+            clip_model=cfg.clip_model,
+            img_split_path=cfg.img_split_path,
+            img_root=cfg.img_path,
+            n_shots=cfg.n_shots,
+            concept_raw_path=cfg.raw_sen_path,
+            concept2cls_path=cfg.concept2cls_path,
+            concept_select_fn=concept_select_fn,
+            cls_names_path=cfg.cls_name_path,
+            batch_size=cfg.bs,
+            on_gpu=cfg.on_gpu,
+            num_workers=cfg.num_workers if 'num_workers' in cfg else 0,
+            img_ext=cfg.img_ext if 'img_ext' in cfg else '.jpg',
+            clip_ckpt=cfg.ckpt_path if 'ckpt_path' in cfg else None,
+            use_txt_norm=cfg.use_txt_norm if 'use_txt_norm' in cfg else False, 
+            use_img_norm=cfg.use_img_norm if 'use_img_norm' in cfg else False,
+            use_cls_name_init=cfg.cls_name_init if 'cls_name_init' in cfg else 'none',
+            use_cls_sim_prior=cfg.cls_sim_prior if 'cls_sim_prior' in cfg else 'none',
+            remove_cls_name=cfg.remove_cls_name if 'remove_cls_name' in cfg else True,
+            submodular_weights=cfg.submodular_weights
+        )
     else:
         print("use dot product dataloader")
         data_module = DotProductDataModule(
-            cfg.num_concept,
-            cfg.data_root,
-            cfg.clip_model,
-            cfg.img_split_path,
-            cfg.img_path,
-            cfg.n_shots,
-            cfg.raw_sen_path,
-            cfg.concept2cls_path,
-            concept_select_fn,
-            cfg.cls_name_path,
-            cfg.bs,
+            num_concept=cfg.num_concept,
+            data_root=cfg.data_root,
+            clip_model=cfg.clip_model,
+            img_split_path=cfg.img_split_path,
+            img_root=cfg.img_path,
+            n_shots=cfg.n_shots,
+            concept_raw_path=cfg.raw_sen_path,
+            concept2cls_path=cfg.concept2cls_path,
+            concept_select_fn=concept_select_fn,
+            cls_names_path=cfg.cls_name_path,
+            batch_size=cfg.bs,
             on_gpu=cfg.on_gpu,
             num_workers=cfg.num_workers if 'num_workers' in cfg else 0,
             img_ext=cfg.img_ext if 'img_ext' in cfg else '.jpg',
@@ -256,7 +284,9 @@ def asso_opt_main(cfg):
         # trainer = pl.Trainer(gpus=1)
         trainer = pl.Trainer(devices=1)
         trainer.test(model, data_module)
+        print(data_module)
         test_acc = round(100 * float(model.total_test_acc), 2)
+        print("Test Acc: {}".format(test_acc))
         dataset = cfg.ckpt_path.split("/")[-3]
         exp = cfg.ckpt_path.split("/")[-2]
         with open("output/asso_opt/{}.txt".format(dataset), "a") as f:
@@ -265,10 +295,19 @@ def asso_opt_main(cfg):
 
     if cfg.proj_name == "ImageNet" and (cfg.n_shots == "all" or cfg.n_shots == 16):
             print("use asso concept with image feature loader")
-            model = AssoConcept(cfg, init_weight=th.load(cfg.init_weight_path) if 'init_weight_path' in cfg else None)
+            if cfg.model_type == "single_expert":
+                model = AssoConcept(cfg, init_weight=th.load(cfg.init_weight_path) if 'init_weight_path_generalist' in cfg else None)
+            elif cfg.model_type == "moe":
+                model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path) if 'init_weight_path_generalist' in cfg else None)
     else:
         print("use asso concept with dot product loader, faster")
-        model = AssoConceptFast(cfg, init_weight=th.load(cfg.init_weight_path) if 'init_weight_path' in cfg else None)
+        if cfg.model_type == "single_expert":
+            print("running single expert")
+            model = AssoConceptFast(cfg, init_weight=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None)
+        elif cfg.model_type == "moe":
+            print("running mixture of experts")
+            model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None,
+                                       init_weight_specialist=th.load(cfg.init_weight_path_specialist) if 'init_weight_path_specialist' in cfg else None)
 
     if cfg.proj_name == "ImageNet" and cfg.n_shots == "all": check_interval = 5
     else: check_interval = 10
@@ -318,6 +357,11 @@ def asso_opt_main(cfg):
         trainer = pl.Trainer(gpus=1, max_epochs=1000, \
             callbacks=[checkpoint_callback, ], check_val_every_n_epoch=50, default_root_dir=cfg.work_dir)
     trainer.fit(model, data_module)
+    # trainer = pl.Trainer(devices=1)
+    trainer.test(model, data_module)
+    print(data_module)
+    test_acc = round(100 * float(model.total_test_acc), 2)
+    print("Test Acc: {}".format(test_acc))
 
 
 if __name__ == "__main__":

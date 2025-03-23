@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 from pathlib import Path
 import random
 import utils
-
+import os
 
 class ImageFeatDataset(Dataset):
     """
@@ -44,6 +44,10 @@ class DotProductDataset(Dataset):
         # self.dot_product = (img_feat @ txt_feat.t())
         # self.labels = label
 
+        print('labels', self.labels)
+        print('finished printing labels')
+        print('txt_feat', txt_feat.shape)
+        # os._exit(0)
 
     def __len__(self):
         return len(self.dot_product)
@@ -52,6 +56,22 @@ class DotProductDataset(Dataset):
     def __getitem__(self, idx):
         # return self.dot_product[idx].cuda(), self.labels[idx].cuda()
         return self.dot_product[idx], self.labels[idx]
+    
+class DotProductDatasetMoE(Dataset):
+    """
+    Two separate concept sets, return two dot products: one for generalist and one for specialist
+    """
+    def __init__(self, img_feat, txt_feat_generalist, txt_feat_specialist, label, on_gpu):
+        print("Using MoE dot product dataset")
+        self.dot_product_generalist = (img_feat @ txt_feat_generalist.t())
+        self.dot_product_specialist = (img_feat @ txt_feat_specialist.t())
+        self.labels = label.cuda() if on_gpu else label
+    
+    def __len__(self):
+        return len(self.dot_product_generalist)
+
+    def __getitem__(self, idx):
+        return self.dot_product_generalist[idx], self.dot_product_specialist[idx], self.labels[idx]
 
 
 class Dataset_with_name(Dataset):
@@ -261,44 +281,120 @@ class DataModule(pl.LightningDataModule):
     
 
     def select_concept(self, concept_select_fn, img_feat_train, concept_feat, n_shots, num_concepts, concept2cls, clip_ckpt, num_images_per_class, submodular_weights):
+        self.force_compute = False
+        
         if not self.select_idx_save_dir.exists() or (self.force_compute and not clip_ckpt):
             print('select concept')
+            print('concept_feat', concept_feat.shape)
+            print('num_concepts', num_concepts)
+            print('num_images_per_class', num_images_per_class)
             self.select_idx = concept_select_fn(img_feat_train, concept_feat, n_shots, concept2cls, 
                                                 num_concepts, num_images_per_class, submodular_weights)
             th.save(self.select_idx, self.select_idx_save_dir)
         else:
+            print('not generating again, just going to load')
+            print('select idx save dir', self.select_idx_save_dir)
+            os._exit(0)
             self.select_idx = th.load(self.select_idx_save_dir)
+    
+        print(f"Selected indices: {self.select_idx}")
+        print(f"Selected concepts: {self.concepts_raw[self.select_idx]}")
+        # save the selected concepts for reference
+        with open('selected_concepts.txt', 'w') as f:
+            for concept in self.concepts_raw[self.select_idx]:
+                f.write(f"{concept}\n")
+        # os._exit(0)
 
 
     def prepare_txt_feat(self, concepts_raw, clip_model, clip_ckpt):
         # TODO: it is possible to store a global text feature for all concepts
         # Here, we just be cautious to recompute it every time
+        self.force_compute = False
         if not self.concept_feat_save_dir.exists() or self.force_compute:
             print('prepare txt feat')
+            print('concepts_raw', concepts_raw)
             self.concept_feat = utils.prepare_txt_feat(concepts_raw,
                                                    clip_model_name=clip_model,
                                                    ckpt_path=None)
+            print('concept_feat', self.concept_feat.shape)
             th.save(self.concept_feat, self.concept_feat_save_dir)
             
         else:
+            print('not generating again, just going to load')
+            print('concept_feat save dir', self.concept_feat_save_dir)
             self.concept_feat = th.load(self.concept_feat_save_dir)
+            os._exit(1)
 
         if self.use_txt_norm:
             self.concept_feat /= self.concept_feat.norm(dim=-1, keepdim=True)
 
-
     def get_img_n_shot(self, cls2img, n_shots):
+        if 'xray' in self.data_root.name.lower():
+            print('xray dataset')
+            return self.get_img_n_shot_multilabel(cls2img, n_shots)
+        else:
+            print('other dataset')
+            return self.get_img_n_shot_singlelabel(cls2img, n_shots)
+
+    def get_img_n_shot_singlelabel(self, cls2img, n_shots):
         labels = []
         all_img_paths = []
         
         # print(f"self.cls_names: {self.cls_names}")
         
         for cls_name, img_names in cls2img.items():
+            # print(f"cls_name: {cls_name}")
+            # print(f"img_names: {len(img_names)}")
+            # print(f"img_names: {img_names}")
             if n_shots != 'all': img_names = random.sample(img_names, n_shots) # random sample n shot images
             labels.extend([self.cls_names.index(cls_name)] * len(img_names))
+            # print(f"labels: {len(labels)}")
             all_img_paths.extend([self.img_root.joinpath('{}{}'.format(img_name, self.img_ext)) for img_name in img_names])
         return all_img_paths, labels
 
+    def get_img_n_shot_multilabel(self, cls2img, n_shots):
+        labels = []
+        all_img_paths = []
+
+        # change cls2img to img2cls, note that one image can belong to multiple classes
+        img2cls = {}
+        for cls_name, img_names in cls2img.items():
+            if n_shots != 'all':
+                sampled = random.sample(img_names, n_shots)
+            else:
+                sampled = img_names
+            
+            for img_name in sampled:
+                if img_name not in img2cls:
+                    img2cls[img_name] = []
+                img2cls[img_name].append(cls_name)
+        
+        # labels should be a list of list of classes
+        for img_name, cls_names in img2cls.items():
+            all_img_paths.append(self.img_root.joinpath('{}{}'.format(img_name, self.img_ext)))
+            labels.append([self.cls_names.index(cls_name) for cls_name in cls_names])
+
+        # SANITY CHECK: test to see if this actually worked
+        # chosen_img = [i for i in all_img_paths if '00030497_000' in str(i)][0]
+        # idx = all_img_paths.index(chosen_img)
+        # print(f"Labels for {chosen_img}: {labels[idx]}")
+        
+        return all_img_paths, labels
+        
+    def _one_hot_encode(self, labels_list, num_classes):
+        """
+        labels_list: list of lists. Each inner list contains class indices for an image.
+        num_classes: total number of classes
+        
+        Returns:
+            A torch.FloatTensor of shape (num_images, num_classes)
+        """
+        one_hot = th.zeros((len(labels_list), num_classes), dtype=th.float)
+        for i, label_indices in enumerate(labels_list):
+            for idx in label_indices:
+                one_hot[i, idx] = 1.0
+        
+        return one_hot
 
     def compute_img_feat(self, cls2img, n_shots, clip_model, clip_ckpt):
         # print(cls2img)
@@ -306,6 +402,13 @@ class DataModule(pl.LightningDataModule):
         img_feat = utils.prepare_img_feat(all_img_paths,
                                           clip_model_name=clip_model,
                                           ckpt_path=clip_ckpt)
+        
+        if 'xray' in self.data_root.name.lower():
+            # labels should be a list of lists of classes
+            labels = self._one_hot_encode(labels_list=labels, num_classes=len(cls2img.keys()))      
+        
+        print(labels)
+        
         return img_feat, th.tensor(labels)
 
 
@@ -319,17 +422,20 @@ class DataModule(pl.LightningDataModule):
             cls2img, feat_save_dir, label_save_dir = splits[mode], self.img_feat_save_dir[mode], self.label_save_dir[mode]
 
             # TODO: only for debugging, put back
-            # if feat_save_dir.exists():
             if not feat_save_dir.exists() or self.force_compute:
-                print('compute img feat for {}'.format(mode))
+                print('compute img feat for {}, clip model: {}'.format(mode, clip_model))
                 img_feat, label = self.compute_img_feat(cls2img, n_shots if mode == 'train' else 'all', clip_model, clip_ckpt)
                 th.save(img_feat, feat_save_dir)
                 th.save(label, label_save_dir)
             else:
+                print("not generating again, just going to load")
+                print('feat save dir', feat_save_dir)
                 img_feat, label = th.load(feat_save_dir), th.load(label_save_dir)
                 
             if self.use_img_norm:
                 img_feat /= img_feat.norm(dim=-1, keepdim=True)
+
+            print('label in prepare_img_feat', label.shape)
 
             self.img_feat[mode] = img_feat
             self.label[mode] = label
@@ -401,3 +507,34 @@ class DotProductDataModule(DataModule):
                 self.label[mode], self.on_gpu)
             for mode in ['train', 'val', 'test']
         }
+
+class DotProductDataModuleMoE(DataModule):
+    """
+    This is a hack to manually load the specialist features without having
+    to modify that massive DataModule class.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.specialist_features, self.specialist_select_idx = self.load_specialist_features()
+    
+    def load_specialist_features(self):
+        # HARDCODE: DANGEROUS!
+        SPECIALIST_FEATURES_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/concepts_feat_biomedclip.pth"
+        specialist_features = th.load(SPECIALIST_FEATURES_PATH)
+        
+        SPECIALIST_SELECT_IDX_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/select_idx.pth"
+        specialist_select_idx = th.load(SPECIALIST_SELECT_IDX_PATH)
+        
+        return specialist_features, specialist_select_idx
+    
+    def setup(self, stage):
+        self.datasets = {
+            mode: DotProductDatasetMoE(
+                img_feat=self.img_feat[mode],
+                txt_feat_generalist=self.concept_feat[self.select_idx[:self.num_concept]],
+                txt_feat_specialist=self.specialist_features[self.specialist_select_idx[:self.num_concept]],
+                label=self.label[mode],
+                on_gpu=self.on_gpu
+            ) for mode in ['train', 'val', 'test']
+        }        
