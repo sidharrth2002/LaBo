@@ -4,7 +4,7 @@
 #let midrule = table.hline(stroke: 0.05em)
 
 #show: arkheion.with(
-  title: "Bottled Brilliance: Mixture of Experts for Biomedical Explainability",
+  title: "Gated Mixture of Experts",
   authors: (
     (name: "Sidharrth Nagappan", email: "sn666@cam.ac.uk", affiliation: "University of Cambridge", orcid: "0000-0000-0000-0000"),
   ),
@@ -13,8 +13,107 @@
   abstract: lorem(55),
   keywords: ("First keyword", "Second keyword", "etc."),
 )
-#set cite(style: "chicago-author-date")
+#set cite(style: "springer-basic")
 #show link: underline
+
+= Introduction
+
+The adoption of deep learning in computational medicine, particularly in medical image classification, is often hampered by the notion of transparency. Black-box models provide predictions without clarifying the semantic features that drive these decisions, making them difficult to trust in critical environments. Concept Bottleneck Models (CBMs) emerged as an interpretable alternative, that incentivised models to route their decisions through a set of human-understandable concepts. However, these conventional CBMs relied on human annotations to mark those concepts in the first place. Language in a Bottle (LaBO) addressed these challenges by automating concept discovery using Large Language Models (LLMs). These concepts were then aligned to images using pre-trained vision-language models such as CLIP, allowing the formation of a concept bottleneck layer. 
+
+However, the end-to-end architecture depends on the richness of CLIP's neural representations, whose wide training-base lacks domain-specific grounding. While general visual representations (such as colour and shape) are learnt, they may overlook subtle morphological cues that are essential for deeply nuanced decisions. In contrast, domain-specific models such as BioMedCLIP, trained on scientific literature and imagery, possess specilist knowledge but may lack the broader visual diversity of CLIP. 
+
+In this mini-project, an extension of the LaBO framework that uses both CLIP and BioMedCLIP as complementary experts, is explored. Specifically, this is framed as a mixture-of-experts (MoE) problem, where CLIP is the generalist expert and BioMedCLIP is the specialist expert, and a learned gating network determines the relative contribution of each for every input image. The motivation is that different skin lesion may benefit from generalist knowledge (e.g. shape, colour patterns) or specialist biomedical cues (e.g. vascular structure, lesion-specific terminology) to varying degrees. A dynamic gating mechanism allows the model to adapatively leverage either or both experts on a per-instance basis, improving flexibility, accuracy, and interpretability. 
+
+... _write what happened_
+
+//  often outperformed by their more specialised counterparts in highly specialised biomedical tasks, such as computational X-Ray and skin lesion analysis. 
+
+// Transparency is a critical factor, that hampers the adoption of computational models in critical domains. Post-hoc explainability attempts to probe the inner mechanisms of these deep neural networks after they are built, often treating the models themselves as black boxes. Concept Bottleneck Models are therefore used to 
+
+// Advances in vision-language models have revolutionised how machines understand and reason in multimodal settings. Models like CLIP (Contrastive Language-Image Pretraining) have demonstrated remarkable zero-shot and few-shot performance across a range of tasks,
+
+= Related Work
+
+
+= Method
+
+// == Problem Formalisation
+
+// The objective of the project is to develop an interpretable skin lesion classification model on the HAM10000 dataset, where interpretability is provided through a concept bottleneck layer, in few-shot and fully-supervised settings.
+
+== Biomedical Dataset
+
+We employ HAM10000, a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018. HAM10000 is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the original authors. 
+
+// A function to represent a virtual image
+#let vimg(body) = {
+    rect(width: 10mm, height: 5mm)[
+        #text(body)
+    ]
+}
+
+#figure(
+    grid(
+        columns: 2,     // 2 means 2 auto-sized columns
+        gutter: 2mm,    // space between columns
+        vimg("1"),
+        vimg("2"),
+    ),
+    caption: "some caption"
+)
+
+== Concept Generation and Submodular Optimisation
+
+LaBO employed sentence parsing using a T5 to extract semantic concepts from LLM-generated sentences #cite(<T5>). We conjecture that this approach is suboptimal, leads to information loss and the quality of the final model is dependent on the accuracy of the trained parsing model. Instead, we propose enforcing JSON structure via Pydantic in prompts we send to our LLM suite (LLAMA, DeepSeek, Meditron and OpenAI's 4o), directly extracting phrasal concepts without intermediate parsing @llama @deepseek. Submodular optimisation is used to select a discriminative set of concepts that maximise coverage of class semantics while minimizing redundancy. Specifically, we define a set function $f(S) = alpha dot "coverage"(S) - beta dot "redundancy"(S)$, and select the subset $S subset.eq C$ of concepts by approximately maximizing $f(S)$ via a greedy algorithm.
+
+== The Experts
+
+== Mixture-of-Experts
+
+Our Gated Mixture-of-Experts approach combines similarity embeddings from both CLIP ($E_C$) and BioMedCLIP ($E_B$). Our approach uses precomputed image-to-concept dot products from each expert, and learns a concept-to-class association matrix for both. Formally, given an input image vector $x_i$, we obtain the generalist and specialist dot products: 
+
+$
+  {D^(g) in.small RR^(B times m_g), D^(s) in.small RR^(B times m_s)}
+$
+
+where $m_g$ and $m_s$ denote the number of generalist and specialist concepts respectively. $A^(g) in.small RR^(K times m_g)$ and $A^(s) in.small RR^(K times m_s)$ are learnable association matrices that map concepts to class logits. Following the original paper, these associations are initialised with language model priors. Class-level predictions from each expert are computed as $S^(g) = D^(g) × (A^(g))^T$ and $S^(s) = D^(s) × (A^(s))^T$. 
+
+The gating network, tuned to inhibit over-parametrisation, is a two-layer neural network with a _LeakyReLU_ activation and sigmoid output, defined as:
+
+$
+  g(x_i) = σ ( W_2 ( "LeakyReLU"( W_1 ( "LayerNorm"(x_i)))))
+$
+
+$g(x_i) in.small [0, 1]$ dynamically determines the cross-expert weighting for each input:
+
+$
+  S_i = g(x_i) ⋅ S_i^(s) + (1 - g(x_i)) ⋅ S_i^(g)
+$
+
+The Gated MoE model is trained by minimizing a total loss that consists of a classification loss (cross-entropy for single-label and binary cross-entropy for multi-label). Additional regularizers can optionally be added to encourage prediction diversity (disincentivize model from collapsing similarity scores) and sparse concept-to-class activations; the original paper did not employ these losses in their final ablations, so we replicate those same decisions. 
+
+$
+  ℒ = "CrossEntropy"(S, y) + λ_{div} ⋅ ( - E_{i} [ "Var"_{k} (S_{i,k}) ] ) + λ_{"L1"} ⋅ ( ||A^(g)||_1 + ||A^(s)||_1 )
+$
+
+// Let $x in.small RR^d$ be the input image embedding, $C^(g) in.small RR^(m_g times d)$ be generalist concept embeddings, where there are $m_g$ concepts and $C^(s) in.small RR^(m_s times d)$ be specialist concept embeddings, where there are $m_s$ concepts. $A^(g) in.small RR^(K times m_g)$ and $A^(s) in.small RR^(K times m_s)$ are learnable association matrices between classes and generalist concepts. $g(x) in.small [0, 1]$ is the gating scalar produced by the gating network for an input $x$. The class-level predictions from each expert are computed:
+
+// $
+// S^(g) = D^(g) times (A^(g))^T
+// $
+// $
+// S^(s) = D^(s) times (A^(s))^T
+// $
+
+// For the generalist branch, class prototypes ar
+
+== Experimental Infrastructure
+
+All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server #footnote[Weights and Biases are used for experimental tracking]. We run all few-shot models for a maximum of 5000 epochs, while restricting fully supervised models to 1500 epochs #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. 
+
+= Results
+
+= Conclusion and Limitations
 
 = Notes
 
