@@ -60,6 +60,25 @@ class AssoConceptMoE(pl.LightningModule):
             elif self.cfg.cls_name_init == "random":
                 th.nn.init.kaiming_normal_(self.init_weight_generalist)
 
+    def log_gating_distribution(self, img_feat, stage="train"):
+        with th.no_grad():
+            gating_values = self.gating_network(img_feat).cpu().numpy()
+            mean_gate = np.mean(gating_values)
+            std_gate = np.std(gating_values)
+            max_gate = np.max(gating_values)
+            min_gate = np.min(gating_values)
+
+            self.log(f"{stage}_gate_mean", mean_gate)
+            self.log(f"{stage}_gate_std", std_gate)
+            self.log(f"{stage}_gate_max", max_gate)
+            self.log(f"{stage}_gate_min", min_gate)
+
+            # Optionally, log histogram to wandb if desired:
+            if self.logger and hasattr(self.logger.experiment, "log"):
+                self.logger.experiment.log({
+                    f"{stage}_gating_distribution": wandb.Histogram(gating_values.flatten())
+                }, commit=False)
+
     def __init__(
         self,
         cfg,
@@ -84,11 +103,16 @@ class AssoConceptMoE(pl.LightningModule):
         )
         select_idx_path_generalist = self.data_root.joinpath("select_idx.pth")
 
+        # concept_feat_path_specialist = self.data_root.joinpath(
+        #     "concepts_feat_{}_specialist.pth".format(
+        #         self.cfg.clip_model.replace("/", "-")
+        #     )
+        # )
+        # TODO: Don't hardcode
         concept_feat_path_specialist = self.data_root.joinpath(
-            "concepts_feat_{}_specialist.pth".format(
-                self.cfg.clip_model.replace("/", "-")
-            )
+            "concepts_feat_biomedclip_specialist.pth"
         )
+        
         concept_raw_path_specialist = self.data_root.joinpath(
             "concepts_raw_selected_specialist.npy"
         )
@@ -335,6 +359,8 @@ class AssoConceptMoE(pl.LightningModule):
 
         sim = self.forward(image, generalist_dot_product, specialist_dot_product)
         pred = 100 * sim  # scaling as standard CLIP does
+        
+        self.log_gating_distribution(image, stage="train")
         # pred = sim
 
         # classification accuracy
@@ -418,6 +444,9 @@ class AssoConceptMoE(pl.LightningModule):
         image, generalist_dot_product, specialist_dot_product, y = batch
         sim = self.forward(image, generalist_dot_product, specialist_dot_product)
         pred = 100 * sim
+        
+        self.log_gating_distribution(image, stage="val")
+        
         if "XRAY" in self.cfg.data_root:
             loss = F.binary_cross_entropy_with_logits(pred, y.float())
         else:
@@ -430,8 +459,10 @@ class AssoConceptMoE(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         print("running test step")
-        image, y = batch
-        sim = self.forward(image)
+        # image, y = batch
+        # sim = self.forward(image)
+        image, generalist_dot_product, specialist_dot_product, y = batch
+        sim = self.forward(image, generalist_dot_product, specialist_dot_product)
         pred = 100 * sim
         if "XRAY" in self.cfg.data_root:
             loss = F.binary_cross_entropy_with_logits(pred, y.float())

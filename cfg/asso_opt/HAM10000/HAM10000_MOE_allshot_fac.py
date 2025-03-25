@@ -9,7 +9,7 @@ concept_select_fn = "submodular"
 submodular_weights = [1e7, 0.1]
 
 proj_name = "HAM10000"
-concept_root = 'datasets/HAM10000/concepts_specialist/'
+concept_root = 'datasets/HAM10000/concepts_generalist/'
 img_split_path = 'datasets/HAM10000/splits'
 img_path = 'datasets/HAM10000/images'
 
@@ -24,4 +24,4 @@ hidden_dim = 256
 # run mixture of experts
 model_type="moe"
 
-clip_model = 'biomedclip'
+clip_model = 'ViT-B/16'

@@ -57,11 +57,17 @@ class AssoConcept(pl.LightningModule):
             # class similarity is prior to restrict class-concept association
             # if class A and B are dissimilar (similarity=0), then the mask location will be 0 
             print('use cls prior')
+            print(cls_sim_path)
             cls_sim = th.load(cls_sim_path)
             new_weights = []
             for concept_id in range(self.init_weight.shape[1]):
+                print(concept_id)
+                print(self.init_weight.shape)
+                print(self.init_weight[:,concept_id])
                 target_class = int(th.where(self.init_weight[:,concept_id] == 1)[0])
                 new_weights.append(cls_sim[target_class] + self.init_weight[:,concept_id])
+            
+            os._exit(1)
             self.init_weight = th.vstack(new_weights).T
             # self.weight_mask = cls_sim @ self.init_weight
 

@@ -70,7 +70,7 @@ if DATASET_TO_USE == "HAM10000":
                         messages=[
                             {
                                 "role": "system",
-                                "content": "Extract the concepts from the class to be used in a Concept Bottleneck Model for Skin Cancer classification from dermatoscopic images. You can be slightly technical when generating the concepts.",
+                                "content": "Extract the concepts from the class to be used in a Concept Bottleneck Model for Skin Cancer classification from dermatoscopic images.",
                             },
                             {
                                 "role": "user",
@@ -110,13 +110,13 @@ if DATASET_TO_USE == "HAM10000":
                         print("Unable to parse response, skipping")
                         print(e)
         with open(
-            "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_specialist/class2concepts.json",
+            "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_generalist/class2concepts_v2.json",
             "w",
         ) as f:
             json.dump(class2concepts, f)
 
         with open(
-            "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_specialist/class2concepts_granular.json",
+            "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_generalist/class2concepts_granular_v2.json",
             "w",
         ) as f:
             json.dump(class2concepts_granular, f)
@@ -130,13 +130,13 @@ if DATASET_TO_USE == "HAM10000":
             class2concepts_granular[key][feature] = list(set(concepts))
 
     with open(
-        "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_specialist/class2concepts.json",
+        "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_generalist/class2concepts_v2.json",
         "w",
     ) as f:
         json.dump(class2concepts, f)
 
     with open(
-        "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_specialist/class2concepts_granular.json",
+        "/home/sn666/explainable_ai/LaBo/datasets/HAM10000/concepts_generalist/class2concepts_granular_v2.json",
         "w",
     ) as f:
         json.dump(class2concepts_granular, f)

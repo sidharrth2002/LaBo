@@ -280,7 +280,10 @@ def asso_opt_main(cfg):
     if cfg.test:
         ckpt_path = cfg.ckpt_path
         print('load ckpt: {}'.format(ckpt_path))
-        model = AssoConceptFast.load_from_checkpoint(str(ckpt_path))
+        if cfg.model_type == "moe":
+            model = AssoConceptMoEFast.load_from_checkpoint(str(ckpt_path))
+        else:
+            model = AssoConceptFast.load_from_checkpoint(str(ckpt_path))
         # trainer = pl.Trainer(gpus=1)
         trainer = pl.Trainer(devices=1)
         trainer.test(model, data_module)
@@ -358,6 +361,14 @@ def asso_opt_main(cfg):
             callbacks=[checkpoint_callback, ], check_val_every_n_epoch=50, default_root_dir=cfg.work_dir)
     trainer.fit(model, data_module)
     # trainer = pl.Trainer(devices=1)
+    
+    print(f"Loading the best model from {checkpoint_callback.best_model_path}")
+    if cfg.model_type == "moe":
+        model = AssoConceptMoEFast.load_from_checkpoint(checkpoint_path=checkpoint_callback.best_model_path)
+    else:
+        model = AssoConceptFast.load_from_checkpoint(checkpoint_path=checkpoint_callback.best_model_path)
+    
+    # load the best model
     trainer.test(model, data_module)
     print(data_module)
     test_acc = round(100 * float(model.total_test_acc), 2)

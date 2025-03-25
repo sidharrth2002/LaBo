@@ -49,3 +49,7 @@ HAM10000_allshot_fac_vit_l14	79.9
 HAM10000_allshot_fac_vit_l14	79.9
 HAM10000_allshot_fac_vit_l14	79.9
 HAM10000_allshot_fac_biomedclip_2	12.54
+HAM10000_moe_allshot_fac	74.73
+HAM10000_moe_allshot_fac	67.36
+HAM10000_moe_allshot_fac	74.73
+HAM10000_moe_allshot_fac	77.21
