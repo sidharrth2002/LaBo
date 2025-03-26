@@ -1,0 +1,19 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="26.1.3">
+  <diagram name="Page-1" id="FDnZ1GL0Mw5TNMro8He2">
+    <mxGraphModel dx="1259" dy="707" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ohjITuTCD-WYjdAlpK8Q-1" value="Class 1 -&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=22;fontFamily=EB Garamond;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DEB%2BGaramond;" vertex="1" parent="1">
+          <mxGeometry x="170" y="110" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ohjITuTCD-WYjdAlpK8Q-2" value="Class 2 -&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=22;fontFamily=EB Garamond;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DEB%2BGaramond;" vertex="1" parent="1">
+          <mxGeometry x="170" y="220" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ohjITuTCD-WYjdAlpK8Q-3" value="Class 3 -&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=22;fontFamily=EB Garamond;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DEB%2BGaramond;" vertex="1" parent="1">
+          <mxGeometry x="170" y="370" width="150" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
