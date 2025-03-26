@@ -1,350 +1,350 @@
-Keratinization patterns
-White Scaling
-Brown Macules
-Non-uniform distribution
-Solar elastosis: Increased elastin in the dermis due to prolonged sun exposure, often giving the skin a thickened, yellowish, or leathery look.
-Asymmetric shape
-Red
-Rough surface
-Crusting: Formation of a crust over the lesion which might suggest progression towards squamous cell carcinoma.
-Keratinized Scale
-Clustered distribution
-Erythematous (reddish) base
-Focal pigmentation: Areas with increased pigmentation that may appear brown or gray.
-Scaly patches or plaques
-Presence of actinic cheilitis on lips
-Color variation including red, pink, or tan shades
-Keratin pearl-like structures: Small, white, keratin-filled nodules visible on dermatoscopy.
-Keratin scale
-Solar elastosis
-Color variation from pink to red
-Erythematous Base
-Angular Structures
-Hyperpigmentation
-Scaling and flaking
-Erythematous plaque or patch
-Pink
-Brownish discoloration
-Indistinct borders: Ill-defined edges of the lesion separating it from surrounding skin.
-Flattened, slightly elevated plaques
-Pigmented Areas
-Color variation (pink, red, brown)
-Rough or sandpaper-like texture
-Background sun damage: Evidence of surrounding photoaged skin, such as wrinkles, mottled pigmentation, or a more leathery texture due to long-term UV exposure.
+Crusty texture
+Scaly surface texture
+Small diameter
+White scales or crusts
+Rough, scaly or crusty surface texture
+Scaly texture
 Light brown
-Erythema: Redness on the skin surface indicative of inflammation.
-Erythematous base
-Presence of pigmentation variations
-Scaly texture: Actinic keratoses often present as rough, scaly patches on the skin, which can be captured as a texture feature within dermatoscopic images.
+Scaly surface: A rough, sandpaper-like texture with visible scaling or crusts, typically occurring on sun-exposed areas of the skin.
+Pink
 Sandpaper-like texture
-Focal keratin
-Indistinct borders
-Fine, thin scales
-Erythematous (reddish)
-Focal Nodularity
-Small, adherent scales
-Vascular Patterns
-Presence of erythema
-Pigmentation changes: There may be patches of hyperpigmentation or hypopigmentation associated with actinic keratoses, offering clues to the diagnosis.
-Erythematous appearance
+Keratin scale
+White or yellowish scaly crusts
+Scaly texture: Actinic keratoses often present as rough, scaly patches on the skin, which can be captured as a texture feature within dermatoscopic images.
+Scaly white surface
+Small diameter (<1cm)
+Crusty Surface
+Background sun damage: Evidence of surrounding photoaged skin, such as wrinkles, mottled pigmentation, or a more leathery texture due to long-term UV exposure.
+Red
 Crusty surface
-Translucency
-Ulceration
-Tan
-Waxy texture
-Surface crusting or scaling
-Pigmented appearance: Areas within the lesion that have a darker, more pigmented coloration, often varying in tones of brown, black, or blue.
-Pinkish hue
-Ulcerations
-Translucency in certain light conditions
-Nodular structure
-Central ulceration with rolled border appearance
-Pearly white areas
-Leaf-like areas: Pigmented patches that resemble the shape of leaves or elongated structures.
-Erythematous regions
-Nodular architecture
-Asymmetry
-Pigment network: A net-like appearance of light colored lines over a pigmented background.
-Ulcerated area
-Telangiectasia: Spot the presence of small, visible blood vessels within or around the lesion.
-Presence of melanin pigmentation
-Ulceration (central crater)
-Central ulceration
-Dark pink
-Vascular structures
-Atrophic areas
-Translucent
-Waxy
-Pinkish
-Multilobular pattern
-Diameter greater than 5mm
-Reddish brown
+Sandpaper-like roughness
+Asymmetrical shape
+Pink hues
+Hyperkeratosis: Thickening of the outer layer of skin accompanied by increased keratin production, contributing to the rough, scaly appearance.
+Central clearing possible
+Rough Texture
+Focal keratin
+Scaly surface
+Rough texture
+Crusting or scaling: Some actinic keratoses can develop a crusty surface due to excessive keratin formation, indicating chronic sun damage.
+Crusty or warty surface
+Asymmetric shape
+Surface dry scaling
+Keratinization patterns
+Pink areas
+Rough or sandpaper-like texture
+Sandpaper-like feel
+Pink Lesions
+Brown discoloration
+Reddish-brown coloration
+Raised plaques
+Focal areas of erosion or bleeding
+Brownish discoloration
+Dermal elastosis
+Scaliness: Presence of flaky or scaly skin texture characteristic of keratinization.
+Visual Concept 2: Hyperkeratotic Surface - A brownish or yellowish crusty appearance due to the build-up of keratinocytes on the skin surface.
+Multiple brownish or reddish patches
+Sun-damaged areas
+Visual Concept 4: Whitish/Grayish Scaling - Presence of white or gray scales or flakes, often indicating the presence of keratotic debris.
+Size less than 1 cm
+Scaly patches or plaques
+Brown
+Shiny white streaks
 Black
-Rolled borders
-Pearly nodules
-Central ulceration or indentation
-Ulceration or erosion
-Blue-black spots
-Border irregularity: indistinct, blurry, or ragged edges of the lesion border, which is commonly observed in basal cell carcinoma.
+Reddish brown
+Telangiectasia: Small, thread-like red or purple lines on the lesion indicative of dilated blood vessels.
+Multilobular pattern
+Waxy texture
+Light pink
+Non-healing sore: An area that continually breaks down or fails to heal completely, sometimes bleeding or oozing.
 Milia-like cysts
-Central ulceration: A noticeable depression or crater in the center of the lesion, sometimes covered by a crust or scab.
-Heterogeneous texture
-White-to-pink nodules
-Light tan
-Raised edge with a rolled border
-Radiating Streaks
+Asymmetry: Uneven shape or structure, where one half of the lesion does not match the other.
+Multiple colors within lesion
+White shiny structures
+Tan
+Crust formation
 Ulceration: Identify any sores or open wounds within the lesion, which may appear as small crusted or oozing areas.
-Telangiectasia: presence of small, visible blood vessels, often found in basal cell carcinoma.
-Focal scaling or crusts
+Radiating Streaks
 Size and scale: size of the lesion in relation to surrounding skin landmarks, noting any rapid changes in dimensions.
-Waxy appearance
-Granular Feature Distribution
-Absence of ulceration
-Dark brown
-Surface Roughness
-Comedo-like Openings: Blackhead-like spots forming due to follicular plugging.
-Color Uniformity
-Pseudonetwork Pattern: Pattern formed by the arrangement of keratin, giving an illusion of network without being one.
-Grey color
-Keratinization
-Lesion Shape
-Thickness variation
-Color variation
-Network-Like Structures: Structures resembling a net, often seen, yet less pronounced, typically due to a reticulated pattern in the pigmentation of the lesion.
-Cobblestone pattern
-Color Variation: Identify the variety of colors present within the lesion, noting any heterogeneity.
-Border Definition
-Waxy surface texture
-Finger-like Projections: Distinct, elongated projections extending outward, indicative of hyperkeratotic elements or acanthotic proliferations.
-Fingerprint-like structure
-No dark or black regions
-Lesion Elevation
-Symmetrical shape
-Non-variegated shading
-Granularity
-Color Homogeneity
-Absent Pigment Network: Lack of a structured pigment pattern commonly found in other lesions.
-Color uniformity
-Reticular depigmentation
-Hairpin Vessels: Presence of looped or curved blood vessels visible on the surface.
-Cyst-Like Structures: The appearance of round, fluid-filled sacs within the lesion, which are actually accumulations of keratin in histological terms.
-Halo effect around lesion
+White-to-pink nodules
+Shape asymmetry: asymmetrical shape of the lesion, lacking uniformity in outline.
+Diameter greater than 5mm
+Light tan
+Microerosions
+Dark pink
+Central ulceration: A noticeable depression or crater in the center of the lesion, sometimes covered by a crust or scab.
+Color variation: presence of multiple colors such as pink, white, red, or darker areas within the same lesion.
+Pigmented areas (brown, black, or blue hues)
+Blue
+Presence of melanin pigmentation
+Presence of arborizing vessels
+Asymmetrical outline
+Ulceration: presence of a central depression or ulcer in the lesion, which is sometimes a characteristic feature.
+Pinkish
+Brown patches or spots
+Ragged edges
+Pearl-like nodules
+Blue-black areas due to melanin presence in pigmented BCC
+Pearly papule: A round, shiny, and smooth lesion often with a pearly or translucent quality.
+Scales or Crusting
+Heterogeneous texture
+Yellowish undertones
+Presence of elevated rolled border
+Erosions
+Blue-black areas (potential pigmentation)
+Radial streaming: Dark lines that appear to radiate from the central part of the lesion.
+Pigment network: A net-like appearance of light colored lines over a pigmented background.
+Surface crusting or scaling
+Nodular Structures
+Pearly white areas
+Pigmentation patterns
+Surface keratin: presence of a rough or scaly surface texture due to keratin accumulation.
+Milia-like Cyst Presence
 Uniform brown coloration
-Globule distribution
-Fingerprint Pattern: Parallel streaks or lines resembling fingerprints, often seen in flat, pigmented forms of keratosis-like lesions.
-Pseudonetwork pattern
-Focal hypopigmentation
+Keratin Pearls
+Surface Texture
+Diameter: Measure the size of the lesion (usually larger lesions over 5mm are of interest).
+Waxy surface texture
+Light brown color
+Surface scales
+Granular Appearance: Surface texture that resembles tiny grains or particles, due to granular keratin buildup.
+Border Sharpness
+Color variegation with shades of brown, black, grey, or tan
 Dark brown color
-Vascularity: Detect presence of blood vessels or vascular changes within the lesion.
-Grey-Blue Components: The presence of grey-blue pigmentation, often indicative of pigmentation in the superficial dermis, commonly seen in acanthosis nigricans-like lesions.
+Diameter: Often these lesions are smaller than malignant ones, usually less than 6mm in diameter.
+Light brown structureless areas
+Dark brown
+Furrow pattern
+Yellowish-tan color
+Lesion Elevation
+Moth-eaten borders
 Light brown patches
+Lack of ulceration or bleeding
+Shiny White Structures: The presence of crystalline or shiny white lines or areas under polarized light, hinting at the fibrosis or scarring within the lesion.
+Presence of a sticker-like plaque
+Asymmetry: Assess the lesion's symmetry in terms of shape and color distribution.
 Gray
-Homogeneous color distribution
-Horny Cysts: Small, round, white or yellow bumps, potentially indicative of keratin-filled cysts.
+Globules: presence of large, oval or round structures that can be uniform in color and shape.
+Lesion Shape
+Asymmetry: The lesion may not have symmetrical shape.
+Cobblestone pattern
+Presence of Milia-like Cysts
+Warty surface appearance
+Tan areas
+Fingerprint Pattern: Parallel streaks or lines resembling fingerprints, often seen in flat, pigmented forms of keratosis-like lesions.
+Presence of milia-like cysts
+Ridges resembling dermatoglyphics
+Fingerprint-like structures: dermatoglyphics or fingerprint-like patterns that are sometimes visible.
+Color Variation: Identify the variety of colors present within the lesion, noting any heterogeneity.
+Roundness
+Fissure-like Ridges
+Oval shape
+Pseudonetwork pattern
+Flatness
 Lesion Shape Regularity
-Color Variability
-Pigment Distribution
-Pseudofollicular Openings: Non-true follicular openings that appear due to the arrangement of keratin.
-Keratin pseudo-horn cysts
-Acanthotic Areas: Thickened layers of the skin with potential visible ridges.
-Yellow
-Color variation with uniform distribution
-Light brown areas
-Lobulated appearance
-Golden brown
-Symmetrical appearance
-Lesion shape
-Grey
-Distribution of Colors
-Central dimple
-Regression Structures: Not typically observed.
-Uniform color distribution
-Regularity of Shape
-Dark brown spots
-Cobblestone Pattern
-Pinkish tone
-Erosion or Ulceration
+Network-Like Structures: Structures resembling a net, often seen, yet less pronounced, typically due to a reticulated pattern in the pigmentation of the lesion.
+Scaling or Hyperkeratosis: Presence of thickened or crusty skin surface that may appear as scales or keratin buildup.
+Grey color
+Round or oval form
+No atypical pigment network
+Surface texture: the surface of the lesion is usually uniform with a warty, waxy, or crusty appearance.
+Brown hues
 Uniform brown color
-Homogenous color within the lesion
-Network of fine depigmented lines
-Vascular Structures: May see dotted or clod vessels but these are subtle and not prominent.
-Brown globules
-Firm nodule
-Peeling or Flaky Surface
-Symmetric shape
-Vascular Structures
-Homogeneity of the lesion
-Focal areas of hypo- or hyperpigmentation
-Dermal Nodule: Presence of a raised, firm, and fibrous nodule beneath the skin.
-Sparse network of blood vessels
-Hyperpigmentation without clear demarcation
-Spindle cell proliferation
-Regular outline
-Unbroken contour
-Symmetrical distribution
-Uniform color variation
-Central Area: Often contains a homogeneous brownish or greyish pigmentation.
-Uniform brown center
-Pigmented Network: Usually absent or delicate, with subtle lines or dots.
 Brownish tone
-Pinkish-brown hue
-Dimple sign
-Sparse presence of network pattern
-Reticular Lines
-Grayish area
-Well-circumscribed
-Pigment network with fine lines
-Centrally located coloring
+Regular border shape
+Light brown to dark brown color
+Hyperpigmented center
+Golden brown
+Veil and Halo Patterns
+Diameter less than 1 cm
 Brown pigmentation
+Presence of a brown to tan color
+Grey
+Peripheral lighter ring
+Lesion shape
+Cobblestone Pattern
+Light brown areas
 Pale brown
-Homogenous pattern
-Color variations
-Network structure
-Yellowish crusts or scaling
-Lesion elevation
-Ulceration: Presence of ulceration or bleeding can be a sign of malignancy.
-Dark Brown
-Diameter variations
-Smooth contour
-Fissure and ridges pattern
-Network structures
-Presence of ulceration
-Presence of Dots or Globules: Identification of dots or round structures often indicating nests of melanocytes which are grouped within the lesion.
-Size/diameter of lesion
-Color Variation
-Uniformly pink
-Regression structures
-Reddish hue
+Elevated lesion
+Homogenous color within the lesion
+Round or oval outline
+Peripheral light brown area
+Uniform brown center
+Red dots or globules
+Circular lesion
+Peripheral brown network
+Regular shape
+Pinkish-brown hue
+Oval or round shape
+Smooth surface texture
+Globular structures
+Unbroken contour
+Dermal Nodule: Presence of a raised, firm, and fibrous nodule beneath the skin.
+Hypopigmented ring
+Symmetry of the lesion
+Uniform border
+Elevated or dome-shaped
+Firm texture
+Distribution of Colors
+Symmetry of Lesion
+Dome-shaped nodule
+Greyish patches
+Homogeneity of the lesion
+Dimple sign
+Brown globules
+Regular outline
+Elevated dome shape
+Regular border
+Central White Scar-like Area
+Symmetrical lesion shape
+Pigmented peripheral rim
+Diameter of the lesion, especially if larger than 6mm
 Hair Growth Patterns
-Diffuse pigmentation
-Asymmetry in color distribution
-Blue-Black
-Structure: Nevi may show a reticular pattern, with a network of light and dark pigmentation, but these should be regular and consistent.
-Variegated pigmentation including multiple shades of brown
-Tan homogeneous areas
-Uniform brown pigmentation
-Brown Areas
-Regression Structures
-Reddish hues around the periphery
-Pigment Network: Inspect for a regular pigment network, which is a common characteristic of benign melanocytic nevi. An irregular network can point toward malignancy.
-Peripheral rim
-Homogeneity of color distribution
-Vascular Patterns: Note any presence of atypical blood vessels, which can appear as linear irregular, glomerular, or hairpin patterns.
-Dot and globe structures: Dots or globule-like structures may appear in some melanocytic nevi.
-Blueish hue
-Blotchiness
-Fibrovascular stroma
-Presence of hypopigmented areas
+Peripheral black dots or clods indicating potential malignancy
+Surface texture
 Reddish Brown
-Color: Nevi often have a uniform color, usually presenting in shades of brown. They may have lighter or darker patches but typically lack significant variation.
+Diameter: Measure the size of the lesion to determine if it exceeds common size thresholds for benign lesions.
+Size/diameter of lesion
+Surface Texture: Analyze the texture of the surface, whether it is smooth, scaly, or crusty.
+Light Brown
+Diameter: Generally, nevi are smaller in diameter compared to malignant lesions, often less than 6mm.
+Uniform surface texture
+Uniform brown pigmentation
+Border sharpness
+Uniformly light brown
+Uniformly dark brown
+Yellowish crusts or scaling
 Brown to black coloration
-Scar-like depigmentation
-Irregular black dots or globules
-Presence of blue-gray areas
-Elevation
-Pigment network: A pigmented network-like structure can sometimes be observed in nevi.
 Light brown with irregular dark streaks
-Absence of regression structures (e.g. regression areas)
-Dermal changes
-Pigment network density
-Absence of ulceration or crusting
-Color Variations
-Network Structure
-Ulceration: breakdown of the skin's surface within the lesion
-Grey Areas
-Lesion size
-Dark brown areas
-Erythema: Presence of redness in the skin surrounding the lesion, suggestive of inflammation.
-Scarring
-Amelanin distribution
-Yellowish hue
-Pattern of pigmentation
-Diverse color points
-Shades of pink indicating inflammation or new vessel formation
-Dark brown to black color
-Presence of Ulceration
-Multi-shaded color distribution
-Network pattern: Atypical or disorganized pigment network within the lesion.
-Scattered Cherries
-Variegated color distribution
-Dark Brown Pigmentation
-Regression Areas
-Depigmented Areas
-Thickening or elevation of the lesion
-Black Dots or Globs
-White depigmentation
-Symmetry of shape
-Architecture disruption
-Spotted appearance in the periphery
-Color Variegation
-Elevation: The lesion's surface may be raised when compared to the surrounding skin, indicating vertical growth.
-Surface ulceration
-Asymmetrical color distribution
-Erythema (redness) surrounding the lesion
-Distribution of Pigmentation
-Erosion
-Uneven color distribution
-Hypopigmented areas (loss of pigmentation)
-Gray color
-Focal/loss of pigment areas
-Border irregularity: The edges of the melanoma are often ragged, notched, or blurred, rather than smooth and even.
-Irregularly distributed dots and globules
-Dark brown pigmentation
-Red coloration
-Presence of a notch or indentation: Inspect the outline for sharp cuts or angles instead of rounded uniformity.
-Ulceration: The surface of the lesion may be broken down, forming ulcer-like areas.
-Gray areas indicating regression
-Granular Texture
+Brown Areas
+Dark Brown
+Ulceration: Presence of ulceration or bleeding can be a sign of malignancy.
+Blue-Black
+Reddish-brown
+Uniformly pink
+Variegated pigmentation including multiple shades of brown
+Lesion elevation
+Light brown with a central darker area
+Fissure and ridges pattern
+Ridge and furrow structures
+Small diameter compared to atypical lesions
+Diameter Size
+Light brown color with homogeneous distribution
+Lines parallel
+Presence of any vascular structures like dots or clods within the lesion
+Size and diameter
+Presence of a blue-white color within the lesion suggestive of deeper skin involvement
+Eccentric Foci: Identify any focal points of color or structure that deviate from the rest of the lesion.
+Pigmentation islands
+Regression Structures
+Diameter: Measure of the size of the nevus, often compared to a set threshold (usually greater than 6mm being suspicious).
+Symmetry or asymmetry of the lesion shape
+Network structures
+Uniformly red
+Dark brown with a black center
+Overall Visual Pattern: Identify if the lesion conforms to known visual patterns such as globular, reticular, or homogeneous.
+Reddish hue
+Dark brown patches with uneven borders
+Symmetry of lesion
+Regression structures
+Grayish veil
+Multiple shades of brown
+Light brown hues
+Surface texture (smooth, scaly, or rough)
+Bleeding or oozing from lesion
+Diameter > 6mm
+Leaf-like structures
 Brown to black color
-Black pigment spots
-Vascular structures: Presence of atypical blood vessels, such as dotted or linear irregular vessels, visible in dermoscopic imaging.
-Focal regression structures
-Erythematous halo
-Lesion Size
-Gray or black dots
-Lacunae patterns
-Reddish-purple
-Surround Skin Reaction
-Peripheral linear vessels: Linear vessels appearing at the edge of the lesion indicating vascular proliferation.
-Blood Vessel Density
-Pigment network abnormalities
-Red color variation
-Microaneurysms
+Diameter: Measure if the lesion is larger than 6mm, although some melanomas can be smaller.
+Pseudopods
+Diameter larger than 6mm
+Blotches of Light/Dark Brown
+Lesion size
+Irregular surface texture
+Diameter: Lesions are often larger than 6 mm (about the size of a pencil eraser) when diagnosed, although they may be smaller when first detected.
+Diameter: The lesion is larger than 6mm, although melanomas can be smaller when first detected.
+Texture Characteristics
+Light brown pigmentation
+Presence of multiple colors in a lesion
+Streaks or Striations
+Presence of multiple shades of color, including brown, black, and tan
+Dark Brown Pigmentation
+Dark brown pigmentation
+Ulceration or open sores on the lesion
+Tan regions
+Scaly Surface
+Diameter: lesions larger than 6mm
+Asymmetry: The melanoma lesion may lack symmetry, meaning one half of the mole does not match the other half in shape.
+Ulceration or Bleeding
+Dot/Globule presence: Irregular distribution of dots or globules scattered throughout the lesion.
+Dark brown to black color
+Diameter greater than 6mm
+Multicolored Lesion
+Erosion
+Whitish veil
+Diameter
+Asymmetry: Assess if one half of the lesion is a mirror image of the other half.
+Granular Texture
+Asymmetry: The lesion lacks symmetry, meaning one half does not mirror the other in shape or color.
+Radial streaming or pseudopods
+Dark brown areas
+Presence of multiple colors (brown, black, blue, red)
+Globules: small, evenly spaced spots or dots within the lesion
+Clods: large, well-defined circular or oval structures within the lesion
+Color Variation: presence of multiple colors such as brown, black, red, white, or blue within the lesion
+Ocular globules
+Thickening or elevation of the lesion
+Globules: Irregularly sized and spaced globules, which may be scattered within the lesion.
+Red dots or clods
+Streaks at the periphery
+Asymmetry in lesion shape
 Purple: Can suggest a more significant blood pooling or vascular anomaly.
-Color variation (red, pink, purple hues)
-Parallel ridge pattern
-Hemorrhagic crust
-Purple
-Diameter Measurement
-Ruby red
-Comma vessels
-Erythematous pink background
-Vascular Pattern
-Granulation Presence
-Bleeding Propensity
-Bright red
-Vascular structures (dots, clods, serpentine lines)
-Lacunae: These are well-defined, oval or polygonal, dark red to purple areas within the lesion, typically seen in hemangiomas.
+Cherry angiomas: These are small, bright red or purple spots that represent clustered abnormal blood vessels.
+Presence of hemorrhage
 Size and diameter of the lesion
-Linear and serpentine vessels: Thin, wavy, or curved red lines represent blood vessels traversing the lesion.
-Erythematousness of lesion
-Purple or blue hue
-Irregular blood vessel distribution: Vessels arranged in an uneven pattern can indicate vascular lesions.
-Presence of ulceration or crusting
-Nodular Aspect
-Purple or Red Tint
-Gray: A possible indicator of regression or necrosis.
-Lacunae presence
-Erythema Intensity
-Vascular pattern (linear, dotted, serpentine)
-Tortuous vessels
-Serpentine vessels
-Pink: A lighter tint that can indicate vascular structures closer to the skin surface.
-Vascular lesion size
-Vascular lesion elevation
-Homogenous blue-gray areas
-Pink hue
-Lesion Borders
+Arborizing (treelike) vessels
+Purple
+Red globules: Small, round, red structures that can be indicative of increased vascularity.
+Lesion Size
+Multiple colors including black, brown, and tan
+Presence of red dots
+Intra-lesional Hemorrhage
+Red: Often associated with increased blood flow or hemorrhage in the lesion.
+Crowned vessels
+Diameter greater than 6 mm
+Red dots
+Red-blue globules
 Crown vessels
-Lobular patterns
-Polymorphous vessels: The presence of a variety of vessel shapes and sizes, such as dotted, linear, or corkscrew vessels.
+Homogeneous red hue: This represents a uniform red color across the lesion, indicating a vascular nature.
+Purplish or violaceous hue
+Punctate bleeding
+Lacunae: These are well-defined, oval or polygonal, dark red to purple areas within the lesion, typically seen in hemangiomas.
+Dark red color
+Purple or blue hue
+Round shape
+Bleeding Propensity
+Central lesion focus
+Reddish-purple
+Presence of blue-black globules
+Purple or Red Tint
+Violaceous
+Ovoid shape
+Red globules
+Asymmetry of shape or color
+Presence of shiny white streaks (chrysalis structures)
+Pink hue
+Observable Thrombosis
+Diameter Measurement
+Bright red
+Lesion Uniformity
+Vascular lesion size
+Globular Structures
+Asymmetry in shape or color
+Color pattern of lesion (e.g., uniform, variegated, atypical)
+Erythematous pink background
+Globular vessels
+Hemorrhagic crust
+Red lines
+Cherry Red Lesions
+Networked vessel pattern
+Ruby red

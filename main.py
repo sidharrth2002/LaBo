@@ -12,11 +12,13 @@ proj_name = 'Food-Fixed-Seed'
 check_interval = 10
 
 def linear_probe_sklearn_main(cfg):
-    "Adapted from: https://github.com/KaiyangZhou/CoOp/blob/main/lpclip/linear_probe.py"
     from sklearn.linear_model import LogisticRegression
+    from sklearn.multiclass import OneVsRestClassifier
+    from sklearn.metrics import accuracy_score, f1_score
     from models.linear_probe.linear_probe import get_features
     from data_lp import LinearProbeDataModule
 
+    is_multilabel = "XRAY" in cfg.data_root
     val_acc_step_list = np.zeros([cfg.n_runs, cfg.steps])
     best_c_weights_list = []
 
@@ -37,59 +39,56 @@ def linear_probe_sklearn_main(cfg):
         val_features, val_labels = get_features(data_module.val_dataloader(),
                                                 cfg.paper, cfg.clip_model)
 
-        # search initialization
         search_list = [1e6, 1e4, 1e2, 1, 1e-2, 1e-4, 1e-6]
         acc_list = []
+
         for c_weight in search_list:
-            clf = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_weight).fit(train_features, train_labels)
+            clf_model = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_weight)
+            clf = OneVsRestClassifier(clf_model) if is_multilabel else clf_model
+            clf.fit(train_features, train_labels)
             pred = clf.predict(val_features)
-            acc_val = np.mean([int(t==p) for t,p in zip(val_labels, pred)]).astype(np.float32) * 100.
+
+            if is_multilabel:
+                acc_val = (pred == val_labels).mean() * 100
+            else:
+                acc_val = (pred == val_labels).mean() * 100
             acc_list.append(acc_val)
 
         print(acc_list, flush=True)
-
-        # binary search
         peak_idx = np.argmax(acc_list)
         c_peak = search_list[peak_idx]
         c_left, c_right = 1e-1 * c_peak, 1e1 * c_peak
 
         def binary_search(c_left, c_right, seed, step, val_acc_step_list):
-            clf_left = LogisticRegression(#random_state=0,
-                                            C=c_left,
-                                            max_iter=1000,
-                                            verbose=1,
-                                            n_jobs=8)
+            clf_left = LogisticRegression(C=c_left, max_iter=1000, verbose=1, n_jobs=8)
+            clf_left = OneVsRestClassifier(clf_left) if is_multilabel else clf_left
             clf_left.fit(train_features, train_labels)
             pred_left = clf_left.predict(val_features)
-            accuracy = np.mean((val_labels == pred_left).astype(np.float32)) * 100.
-            acc_left =  np.mean([int(t==p) for t,p in zip(val_labels, pred_left)]).astype(np.float32) * 100
-            print("Val accuracy (Left): {:.2f}".format(acc_left), flush=True)
 
-            clf_right = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_right).fit(train_features, train_labels)
+            acc_left = (pred_left == val_labels).mean() * 100
+            print(f"Val accuracy (Left): {acc_left:.2f}")
+
+            clf_right = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_right)
+            clf_right = OneVsRestClassifier(clf_right) if is_multilabel else clf_right
+            clf_right.fit(train_features, train_labels)
             pred_right = clf_right.predict(val_features)
-            acc_right =  np.mean( [int(t==p) for t,p in zip(val_labels, pred_right)]).astype(np.float32) * 100
-            print("Val accuracy (Right): {:.2f}".format(acc_right), flush=True)
+            acc_right = (pred_right == val_labels).mean() * 100
+            print(f"Val accuracy (Right): {acc_right:.2f}")
 
-            # find maximum and update ranges
             if acc_left < acc_right:
-                c_final = c_right
-                clf_final = clf_right
-                # range for the next step
+                c_final, clf_final = c_right, clf_right
                 c_left = 0.5 * (np.log10(c_right) + np.log10(c_left))
                 c_right = np.log10(c_right)
             else:
-                c_final = c_left
-                clf_final = clf_left
-                # range for the next step
+                c_final, clf_final = c_left, clf_left
                 c_right = 0.5 * (np.log10(c_right) + np.log10(c_left))
                 c_left = np.log10(c_left)
 
             pred = clf_final.predict(val_features)
-            val_acc = np.mean( [int(t==p) for t,p in zip(val_labels, pred)]).astype(np.float32) * 100
-            print("Val Accuracy: {:.2f}".format(val_acc), flush=True)
+            val_acc = (pred == val_labels).mean() * 100
+            print(f"Val Accuracy: {val_acc:.2f}")
             val_acc_step_list[seed - 1, step] = val_acc
 
-            saveline = "{}, seed {}, {} shot, weight {}, val_acc {:.2f}\n".format(cfg.dataset, seed, cfg.n_shots, c_final, val_acc)
             return (
                 np.power(10, c_left),
                 np.power(10, c_right),
@@ -99,47 +98,175 @@ def linear_probe_sklearn_main(cfg):
             )
 
         for step in range(cfg.steps):
-            print(
-                f"{cfg.dataset}, {cfg.n_shots} Shot, Round {step}: {c_left}/{c_right}",
-                flush=True,
+            print(f"{cfg.dataset}, {cfg.n_shots} Shot, Round {step}: {c_left}/{c_right}", flush=True)
+            c_left, c_right, seed, step, val_acc_step_list = binary_search(
+                c_left, c_right, seed, step, val_acc_step_list
             )
-            c_left, c_right, seed, step, val_acc_step_list = binary_search(c_left, c_right, seed, step, val_acc_step_list)
 
-        # save c_left as the optimal weight for each run
         best_c_weights_list.append(c_left)
 
-    # take the mean of C from multiple runs
     best_c = np.mean(best_c_weights_list)
-    
-    # run test with the best C
-    classifier = LogisticRegression(#random_state=0,
-                                    C=best_c,
-                                    max_iter=1000,
-                                    verbose=1,
-                                    n_jobs=8)
-    classifier.fit(train_features, train_labels)
+
     test_features, test_labels = get_features(data_module.test_dataloader(),
                                               cfg.paper, cfg.clip_model)
-    predictions = classifier.predict(test_features)
+    clf_final_model = LogisticRegression(C=best_c, max_iter=1000, verbose=1, n_jobs=8)
+    clf_final = OneVsRestClassifier(clf_final_model) if is_multilabel else clf_final_model
+    clf_final.fit(train_features, train_labels)
 
-    # average validation performance
+    predictions = clf_final.predict(test_features)
+
     val_acc_list = val_acc_step_list[:, -1]
     val_acc_mean = np.mean(val_acc_list)
     val_acc_std = np.std(val_acc_list)
-    print("{} {}shot {}, best C = {}\n".format(cfg.dataset, cfg.n_shots, cfg.clip_model, best_c))
-    print(f"Val Accuracy: {val_acc_mean:.3f}")
-    print(f"Val std: {val_acc_std:.3f}")
 
-    # test performance
-    accuracy = np.mean((test_labels == predictions).astype(np.float32)) * 100.
-    print(f"Test Accuracy = {accuracy:.3f}")
+    print(f"{cfg.dataset} {cfg.n_shots} shot {cfg.clip_model}, best C = {best_c}")
+    print(f"Val Accuracy: {val_acc_mean:.3f}, Val std: {val_acc_std:.3f}")
 
-    with open("output/linear_probe/{}.txt".format(cfg.dataset), "a") as f:
-        f.write("{} {}shot {}, best C = {}, seed = {}\n".format(cfg.dataset, cfg.n_shots, cfg.clip_model, best_c, seed))
+    if is_multilabel:
+        test_acc = (predictions == test_labels).mean() * 100
+        test_f1 = f1_score(test_labels, predictions, average="macro")
+        print(f"Test Accuracy = {test_acc:.3f}, Macro F1 = {test_f1:.3f}")
+    else:
+        test_acc = (predictions == test_labels).mean() * 100
+        print(f"Test Accuracy = {test_acc:.3f}")
+
+    with open(f"output/linear_probe/{cfg.dataset}.txt", "a") as f:
+        f.write(f"{cfg.dataset} {cfg.n_shots}shot {cfg.clip_model}, best C = {best_c}\n")
         f.write(f"Val Accuracy: {val_acc_mean:.3f}, Val std: {val_acc_std:.3f}\n")
-        f.write(f"Test Accuracy = {accuracy:.3f}\n\n")
-    matrix = confusion_matrix(test_labels, predictions)
-    print("Macro Accuracy = {}".format(np.mean(matrix.diagonal()/matrix.sum(axis=1)) * 100))
+        if is_multilabel:
+            f.write(f"Test Accuracy = {test_acc:.3f}, Macro F1 = {test_f1:.3f}\n\n")
+        else:
+            f.write(f"Test Accuracy = {test_acc:.3f}\n\n")
+
+# def linear_probe_sklearn_main(cfg):
+#     "Adapted from: https://github.com/KaiyangZhou/CoOp/blob/main/lpclip/linear_probe.py"
+#     from sklearn.linear_model import LogisticRegression
+#     from models.linear_probe.linear_probe import get_features
+#     from data_lp import LinearProbeDataModule
+
+#     val_acc_step_list = np.zeros([cfg.n_runs, cfg.steps])
+#     best_c_weights_list = []
+
+#     for seed in range(1, cfg.n_runs + 1):
+#         np.random.seed(seed)
+#         random.seed(seed)
+#         data_module = LinearProbeDataModule(cfg.data_root,
+#                                             cfg.bs,
+#                                             cfg.img_split_path,
+#                                             cfg.img_path,
+#                                             cfg.n_shots,
+#                                             cfg.cls_names,
+#                                             img_ext=cfg.img_ext,
+#                                             num_workers=8)
+#         data_module.setup()
+#         train_features, train_labels = get_features(data_module.train_dataloader(),
+#                                                     cfg.paper, cfg.clip_model)
+#         val_features, val_labels = get_features(data_module.val_dataloader(),
+#                                                 cfg.paper, cfg.clip_model)
+
+#         # search initialization
+#         search_list = [1e6, 1e4, 1e2, 1, 1e-2, 1e-4, 1e-6]
+#         acc_list = []
+#         for c_weight in search_list:
+#             clf = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_weight).fit(train_features, train_labels)
+#             pred = clf.predict(val_features)
+#             acc_val = np.mean([int(t==p) for t,p in zip(val_labels, pred)]).astype(np.float32) * 100.
+#             acc_list.append(acc_val)
+
+#         print(acc_list, flush=True)
+
+#         # binary search
+#         peak_idx = np.argmax(acc_list)
+#         c_peak = search_list[peak_idx]
+#         c_left, c_right = 1e-1 * c_peak, 1e1 * c_peak
+
+#         def binary_search(c_left, c_right, seed, step, val_acc_step_list):
+#             clf_left = LogisticRegression(#random_state=0,
+#                                             C=c_left,
+#                                             max_iter=1000,
+#                                             verbose=1,
+#                                             n_jobs=8)
+#             clf_left.fit(train_features, train_labels)
+#             pred_left = clf_left.predict(val_features)
+#             accuracy = np.mean((val_labels == pred_left).astype(np.float32)) * 100.
+#             acc_left =  np.mean([int(t==p) for t,p in zip(val_labels, pred_left)]).astype(np.float32) * 100
+#             print("Val accuracy (Left): {:.2f}".format(acc_left), flush=True)
+
+#             clf_right = LogisticRegression(solver="lbfgs", max_iter=1000, penalty="l2", C=c_right).fit(train_features, train_labels)
+#             pred_right = clf_right.predict(val_features)
+#             acc_right =  np.mean( [int(t==p) for t,p in zip(val_labels, pred_right)]).astype(np.float32) * 100
+#             print("Val accuracy (Right): {:.2f}".format(acc_right), flush=True)
+
+#             # find maximum and update ranges
+#             if acc_left < acc_right:
+#                 c_final = c_right
+#                 clf_final = clf_right
+#                 # range for the next step
+#                 c_left = 0.5 * (np.log10(c_right) + np.log10(c_left))
+#                 c_right = np.log10(c_right)
+#             else:
+#                 c_final = c_left
+#                 clf_final = clf_left
+#                 # range for the next step
+#                 c_right = 0.5 * (np.log10(c_right) + np.log10(c_left))
+#                 c_left = np.log10(c_left)
+
+#             pred = clf_final.predict(val_features)
+#             val_acc = np.mean( [int(t==p) for t,p in zip(val_labels, pred)]).astype(np.float32) * 100
+#             print("Val Accuracy: {:.2f}".format(val_acc), flush=True)
+#             val_acc_step_list[seed - 1, step] = val_acc
+
+#             saveline = "{}, seed {}, {} shot, weight {}, val_acc {:.2f}\n".format(cfg.dataset, seed, cfg.n_shots, c_final, val_acc)
+#             return (
+#                 np.power(10, c_left),
+#                 np.power(10, c_right),
+#                 seed,
+#                 step,
+#                 val_acc_step_list,
+#             )
+
+#         for step in range(cfg.steps):
+#             print(
+#                 f"{cfg.dataset}, {cfg.n_shots} Shot, Round {step}: {c_left}/{c_right}",
+#                 flush=True,
+#             )
+#             c_left, c_right, seed, step, val_acc_step_list = binary_search(c_left, c_right, seed, step, val_acc_step_list)
+
+#         # save c_left as the optimal weight for each run
+#         best_c_weights_list.append(c_left)
+
+#     # take the mean of C from multiple runs
+#     best_c = np.mean(best_c_weights_list)
+    
+#     # run test with the best C
+#     classifier = LogisticRegression(#random_state=0,
+#                                     C=best_c,
+#                                     max_iter=1000,
+#                                     verbose=1,
+#                                     n_jobs=8)
+#     classifier.fit(train_features, train_labels)
+#     test_features, test_labels = get_features(data_module.test_dataloader(),
+#                                               cfg.paper, cfg.clip_model)
+#     predictions = classifier.predict(test_features)
+
+#     # average validation performance
+#     val_acc_list = val_acc_step_list[:, -1]
+#     val_acc_mean = np.mean(val_acc_list)
+#     val_acc_std = np.std(val_acc_list)
+#     print("{} {}shot {}, best C = {}\n".format(cfg.dataset, cfg.n_shots, cfg.clip_model, best_c))
+#     print(f"Val Accuracy: {val_acc_mean:.3f}")
+#     print(f"Val std: {val_acc_std:.3f}")
+
+#     # test performance
+#     accuracy = np.mean((test_labels == predictions).astype(np.float32)) * 100.
+#     print(f"Test Accuracy = {accuracy:.3f}")
+
+#     with open("output/linear_probe/{}.txt".format(cfg.dataset), "a") as f:
+#         f.write("{} {}shot {}, best C = {}, seed = {}\n".format(cfg.dataset, cfg.n_shots, cfg.clip_model, best_c, seed))
+#         f.write(f"Val Accuracy: {val_acc_mean:.3f}, Val std: {val_acc_std:.3f}\n")
+#         f.write(f"Test Accuracy = {accuracy:.3f}\n\n")
+#     matrix = confusion_matrix(test_labels, predictions)
+#     print("Macro Accuracy = {}".format(np.mean(matrix.diagonal()/matrix.sum(axis=1)) * 100))
 
 def save_npy_files(class2concepts, save_dir):
     # sort class name to make sure they are in the same order, to avoid potential problem
@@ -288,12 +415,19 @@ def asso_opt_main(cfg):
         trainer = pl.Trainer(devices=1)
         trainer.test(model, data_module)
         print(data_module)
-        test_acc = round(100 * float(model.total_test_acc), 2)
-        print("Test Acc: {}".format(test_acc))
-        dataset = cfg.ckpt_path.split("/")[-3]
-        exp = cfg.ckpt_path.split("/")[-2]
-        with open("output/asso_opt/{}.txt".format(dataset), "a") as f:
-            f.write("{}\t{}\n".format(exp, test_acc))
+        if "XRAY" in cfg.data_root:
+            test_acc = round(100 * float(model.total_test_acc), 2)
+            print("Test Acc: {}".format(test_acc))
+            dataset = cfg.ckpt_path.split("/")[-3]
+            exp = cfg.ckpt_path.split("/")[-2]
+            with open("output/asso_opt/{}.txt".format(dataset), "a") as f:
+                f.write("{}\t{}\n".format(exp, test_acc))
+        else:
+            test_f1 = round(100 * float(model.total_test_f1), 2)
+            dataset = cfg.ckpt_path.split("/")[-3]
+            exp = cfg.ckpt_path.split("/")[-2]
+            with open("output/asso_opt/{}.txt".format(dataset), "a") as f:
+                f.write("{}\t{}\n".format(exp, test_f1))
         return
 
     if cfg.proj_name == "ImageNet" and (cfg.n_shots == "all" or cfg.n_shots == 16):
@@ -309,8 +443,17 @@ def asso_opt_main(cfg):
             model = AssoConceptFast(cfg, init_weight=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None)
         elif cfg.model_type == "moe":
             print("running mixture of experts")
-            model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None,
-                                       init_weight_specialist=th.load(cfg.init_weight_path_specialist) if 'init_weight_path_specialist' in cfg else None)
+            init_weight_generalist = None
+            if 'init_weight_path_generalist' in cfg:
+                init_weight_generalist = th.load(cfg.init_weight_path_generalist)
+                print("loaded generalist weight from {}".format(cfg.init_weight_path_generalist))
+            init_weight_specialist = None
+            if 'init_weight_path_specialist' in cfg:
+                init_weight_specialist = th.load(cfg.init_weight_path_specialist)
+                print("loaded specialist weight from {}".format(cfg.init_weight_path_specialist))
+            model = AssoConceptMoEFast(cfg, init_weight_generalist=init_weight_generalist, init_weight_specialist=init_weight_specialist)
+            # model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None,
+            #                            init_weight_specialist=th.load(cfg.init_weight_path_specialist) if 'init_weight_path_specialist' in cfg else None)
 
     if cfg.proj_name == "ImageNet" and cfg.n_shots == "all": check_interval = 5
     else: check_interval = 10
@@ -327,7 +470,7 @@ def asso_opt_main(cfg):
             checkpoint_callback = pl.callbacks.ModelCheckpoint(
                 dirpath=cfg.work_dir,
                 filename='{epoch}-{step}-{val_acc:.4f}',
-                monitor='val_acc',
+                monitor='val_f1' if "XRAY" in cfg.data_root else 'val_acc',
                 mode='max',
                 save_top_k=1,
                 every_n_epochs=check_interval)
@@ -352,7 +495,7 @@ def asso_opt_main(cfg):
         checkpoint_callback = pl.callbacks.ModelCheckpoint(
             dirpath=cfg.work_dir,
             filename='{epoch}-{step}-{val_acc:.4f}',
-            monitor='val_acc',
+            monitor='val_f1' if "XRAY" in cfg.data_root else 'val_acc',
             mode='max',
             save_top_k=1,
             every_n_epochs=50)
