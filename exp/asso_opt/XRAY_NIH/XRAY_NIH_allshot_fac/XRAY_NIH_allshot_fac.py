@@ -30,5 +30,6 @@ on_gpu = True
 num_concept = 700
 lr = 0.0005
 max_epochs = 10000
+model_type = 'single_expert'
 n_shots = 'all'
 data_root = 'exp/asso_opt/XRAY_NIH/XRAY_NIH_allshot_fac'

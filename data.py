@@ -11,6 +11,7 @@ from pathlib import Path
 import random
 import utils
 import os
+import torch.nn.functional as F
 
 class ImageFeatDataset(Dataset):
     """
@@ -35,7 +36,10 @@ class DotProductDataset(Dataset):
     where image is a PIL Image
     """
 
-    def __init__(self, img_feat, txt_feat, label, on_gpu):
+    def __init__(self, img_feat, txt_feat, label, on_gpu, normalise=False):
+        if normalise:
+            img_feat = F.normalize(img_feat, dim=-1)
+            txt_feat = F.normalize(txt_feat, dim=-1)
         self.dot_product = (img_feat @ txt_feat.t())
         self.dot_product = self.dot_product.cuda(
         ) if on_gpu else self.dot_product
@@ -509,7 +513,8 @@ class DotProductDataModule(DataModule):
             mode: DotProductDataset(
                 self.img_feat[mode],
                 self.concept_feat[self.select_idx[:self.num_concept]],
-                self.label[mode], self.on_gpu)
+                self.label[mode], self.on_gpu,
+                normalise = True if "xray" in self.data_root.stem.lower() else False)
             for mode in ['train', 'val', 'test']
         }
 
@@ -525,10 +530,18 @@ class DotProductDataModuleMoE(DataModule):
     
     def load_specialist_features(self):
         # HARDCODE: DANGEROUS!
-        SPECIALIST_FEATURES_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/concepts_feat_biomedclip.pth"
+        # SPECIALIST_FEATURES_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/concepts_feat_biomedclip.pth"
+        # specialist_features = th.load(SPECIALIST_FEATURES_PATH)
+        
+        # SPECIALIST_SELECT_IDX_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/select_idx.pth"
+        # specialist_select_idx = th.load(SPECIALIST_SELECT_IDX_PATH)
+
+        print(f"Loading specialist features from {self.data_root.joinpath('concepts_feat_biomedclip_specialist.pth')}")
+        SPECIALIST_FEATURES_PATH = self.data_root.joinpath('concepts_feat_biomedclip_specialist.pth')
         specialist_features = th.load(SPECIALIST_FEATURES_PATH)
         
-        SPECIALIST_SELECT_IDX_PATH = "/home/sn666/explainable_ai/LaBo/exp/asso_opt/HAM10000/HAM10000_specialist_allshot_fac/select_idx.pth"
+        print(f"Loading specialist select idx from {self.data_root.joinpath('select_idx_specialist.pth')}")
+        SPECIALIST_SELECT_IDX_PATH = self.data_root.joinpath('select_idx_specialist.pth')
         specialist_select_idx = th.load(SPECIALIST_SELECT_IDX_PATH)
         
         return specialist_features, specialist_select_idx

@@ -57,11 +57,17 @@ class AssoConcept(pl.LightningModule):
             # class similarity is prior to restrict class-concept association
             # if class A and B are dissimilar (similarity=0), then the mask location will be 0 
             print('use cls prior')
+            print(cls_sim_path)
             cls_sim = th.load(cls_sim_path)
             new_weights = []
             for concept_id in range(self.init_weight.shape[1]):
+                print(concept_id)
+                print(self.init_weight.shape)
+                print(self.init_weight[:,concept_id])
                 target_class = int(th.where(self.init_weight[:,concept_id] == 1)[0])
                 new_weights.append(cls_sim[target_class] + self.init_weight[:,concept_id])
+            
+            os._exit(1)
             self.init_weight = th.vstack(new_weights).T
             # self.weight_mask = cls_sim @ self.init_weight
 
@@ -70,10 +76,13 @@ class AssoConcept(pl.LightningModule):
         print(f"Num labels is: {cfg.num_cls}")
         
         if 'XRAY' in self.cfg.data_root:
-            # we're doing multi-label classification
-            self.train_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
-            self.valid_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
-            self.test_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            # we're doing multi-label classification, use F1 instead of accuracy
+            # self.train_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            # self.valid_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            # self.test_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task='multilabel')
+            self.train_f1 = torchmetrics.F1Score(num_labels=cfg.num_cls, task='multilabel', average='macro')
+            self.valid_f1 = torchmetrics.F1Score(num_labels=cfg.num_cls, task='multilabel', average='macro')
+            self.test_f1 = torchmetrics.F1Score(num_labels=cfg.num_cls, task='multilabel', average='macro')
         else:        
             self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
             self.valid_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls, task='multiclass')
@@ -82,6 +91,9 @@ class AssoConcept(pl.LightningModule):
         self.all_y = []
         self.all_pred = []
         self.confmat = torchmetrics.ConfusionMatrix(num_classes=self.cfg.num_cls, task='multiclass')
+        
+        if 'XRAY' in self.cfg.data_root:
+            self.logit_scale = th.nn.Parameter(th.ones([]) * np.log(1 / 0.07))
         
         self.clip_model = self.cfg.clip_model
         self.save_hyperparameters()
@@ -114,7 +126,11 @@ class AssoConcept(pl.LightningModule):
         print(f"Data Root: {self.cfg.data_root}")
 
         sim = self.forward(image)
-        pred = 100 * sim  # scaling as standard CLIP does
+        if 'XRAY' in self.cfg.data_root:
+            pred = sim  # do not multiply by 100
+        else:
+            pred = 100 * sim  # scaling as standard CLIP does
+                
         # pred = sim
 
         # classification accuracy
@@ -129,6 +145,7 @@ class AssoConcept(pl.LightningModule):
             # we need to do multi-label classification
             # print('doing binary cross entropy with logits')
             cls_loss = F.binary_cross_entropy_with_logits(pred, label.float())
+            # probs = th.sigmoid(pred)
         else:
             cls_loss = F.cross_entropy(pred, label)
             
@@ -156,13 +173,16 @@ class AssoConcept(pl.LightningModule):
         if 'XRAY' in self.cfg.data_root:
             print('doing sigmoid then threshold')
             pred_label = (th.sigmoid(pred) > 0.5).float()
-            print(pred_label)
+            print(pred)
+            # os._exit(1)
+            print(f"train f1: {self.train_f1(pred_label, label)}")
+            self.train_f1(pred_label, label)
         else:
             pred_label = pred
+            self.train_acc(pred_label, label)
+            print(f"train accuracy: {self.train_acc(pred_label, label)}")
+            self.log('train_acc', self.train_acc, on_step=False, on_epoch=True)
 
-        self.train_acc(pred_label, label)
-        print(f"train accuracy: {self.train_acc(pred_label, label)}")
-        self.log('train_acc', self.train_acc, on_step=False, on_epoch=True)
         final_loss = cls_loss
         if self.cfg.use_l1_loss:
             final_loss += self.cfg.lambda_l1 * row_l1_norm
@@ -179,18 +199,26 @@ class AssoConcept(pl.LightningModule):
     def validation_step(self, batch, batch_idx):        
         if not self.cfg.DEBUG:
             if self.global_step == 0 and not self.cfg.DEBUG:
-                wandb.define_metric('val_acc', summary='max')
+                # wandb.define_metric('val_acc', summary='max')
+                if 'XRAY' in self.cfg.data_root:
+                    wandb.define_metric('val_f1', summary='max')
+                else:
+                    wandb.define_metric('val_acc', summary='max')
         image, y = batch
         sim = self.forward(image)
         pred = 100 * sim
         if 'XRAY' in self.cfg.data_root:
             loss = F.binary_cross_entropy_with_logits(pred, y.float())
+            probs = th.sigmoid(pred)
+            pred_label = (probs > 0.5).float()
+            self.valid_f1(pred_label, y)
+            self.log('val_f1', self.valid_f1, on_step=False, on_epoch=True)
+            self.log('val_loss', loss)
         else:
             loss = F.cross_entropy(pred, y)
-    
-        self.log('val_loss', loss)
-        self.valid_acc(pred, y)
-        self.log('val_acc', self.valid_acc, on_step=False, on_epoch=True)
+            self.log('val_loss', loss)
+            self.valid_acc(pred, y)
+            self.log('val_acc', self.valid_acc, on_step=False, on_epoch=True)
         return loss
 
 
@@ -199,15 +227,24 @@ class AssoConcept(pl.LightningModule):
         image, y = batch
         sim = self.forward(image)
         pred = 100 * sim
-        loss = F.cross_entropy(pred, y)
-        y_pred = pred.argmax(dim=-1)
-        self.confmat(y_pred, y)
-        self.all_y.append(y)
-        self.all_pred.append(y_pred)
-        self.log('test_loss', loss)
-        self.test_acc(pred, y)
-        print(f"test accuracy: {self.test_acc(pred, y)}")
-        self.log('test_acc', self.test_acc, on_step=False, on_epoch=True)
+        if 'XRAY' in self.cfg.data_root:
+            loss = F.binary_cross_entropy_with_logits(pred, y.float())
+            probs = th.sigmoid(pred)
+            pred_label = (probs > 0.5).float()
+            self.test_f1(pred_label, y)
+            print(f"test f1: {self.test_f1(pred_label, y)}")
+            self.log('test_f1', self.test_f1, on_step=False, on_epoch=True)
+            self.log('test_loss', loss)
+        else:
+            loss = F.cross_entropy(pred, y)
+            y_pred = pred.argmax(dim=-1)
+            self.confmat(y_pred, y)
+            self.all_y.append(y)
+            self.all_pred.append(y_pred)
+            self.log('test_loss', loss)
+            self.test_acc(pred, y)
+            print(f"test accuracy: {self.test_acc(pred, y)}")
+            self.log('test_acc', self.test_acc, on_step=False, on_epoch=True)
         return loss
 
 
@@ -220,7 +257,10 @@ class AssoConcept(pl.LightningModule):
     def on_test_epoch_end(self):
         all_y = th.hstack(self.all_y)
         all_pred = th.hstack(self.all_pred)
-        self.total_test_acc = self.test_acc(all_pred, all_y)
+        if 'XRAY' in self.cfg.data_root:
+            self.total_test_f1 = self.test_f1(all_pred, all_y)
+        else:
+            self.total_test_acc = self.test_acc(all_pred, all_y)
         pass
 
     def on_predict_epoch_start(self):
@@ -282,7 +322,12 @@ class AssoConceptFast(AssoConcept):
     def forward(self, dot_product):
         print('running fast')
         mat = self._get_weight_mat()
-        res = dot_product @ mat.t()
+        # if "XRAY" in self.cfg.data_root:
+        #     mat = F.normalize(mat, p=2, dim=-1)  # normalize each row vector
+        if "XRAY" in self.cfg.data_root:
+            res = dot_product @ mat.t() * self.logit_scale.exp()
+        else:
+            res = dot_product @ mat.t()
         th.set_printoptions(threshold=10000)
         print(f"Res: {res}")
         return res

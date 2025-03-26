@@ -46,6 +46,27 @@ def get_img_feat(model, x, paper):
         x = x @ model.proj
     return x
 
+# def get_features(dataloader, paper, clip_model='ViT-B/32'):
+#     device = "cuda" if torch.cuda.is_available() else "cpu"
+#     model, preprocess = clip.load(clip_model, device)
+#     convert_models_to_fp32(model)
+#     all_features = []
+#     all_labels = []
+
+#     with torch.no_grad():
+#         for images, labels in tqdm(dataloader):
+#             # features = model.encode_image(images.to(device))
+#             if 'vit' not in clip_model.lower():
+#                 features = model.visual(images.to(device))
+#             else:
+#                 features = get_img_feat(model, images.to(device), paper)
+
+#             all_features.append(features)
+#             all_labels.append(labels)
+
+#     return torch.cat(all_features).cpu().numpy(), torch.cat(
+#         all_labels).cpu().numpy()
+
 def get_features(dataloader, paper, clip_model='ViT-B/32'):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = clip.load(clip_model, device)
@@ -55,18 +76,23 @@ def get_features(dataloader, paper, clip_model='ViT-B/32'):
 
     with torch.no_grad():
         for images, labels in tqdm(dataloader):
-            # features = model.encode_image(images.to(device))
             if 'vit' not in clip_model.lower():
                 features = model.visual(images.to(device))
             else:
                 features = get_img_feat(model, images.to(device), paper)
 
             all_features.append(features)
-            all_labels.append(labels)
 
-    return torch.cat(all_features).cpu().numpy(), torch.cat(
-        all_labels).cpu().numpy()
+            # Check if multi-label: either label has >1 dimension or is float/binary matrix
+            if labels.ndim > 1 or labels.dtype != torch.long:
+                all_labels.append(labels)
+            else:
+                # single-label classification
+                all_labels.append(labels)
 
+    all_features = torch.cat(all_features).cpu().numpy()
+    all_labels = torch.cat(all_labels).cpu().numpy()
+    return all_features, all_labels
 
 class LogisticRegression(pl.LightningModule):
 
@@ -81,9 +107,16 @@ class LogisticRegression(pl.LightningModule):
         in_dim = 1024 if 'vit' not in cfg.clip_model.lower() else (768 if self.paper else 512)
         self.fc = nn.Linear(in_dim, n_cls)
         self.cfg = cfg
-        self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
-        self.val_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
-        self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
+        if "XRAY" in self.cfg.data_root:
+            self.train_acc = torchmetrics.Accuracy(
+                num_labels=cfg.num_cls, task="multilabel")
+            self.val_acc = torchmetrics.Accuracy(
+                num_labels=cfg.num_cls, task="multilabel")
+            self.test_acc = torchmetrics.Accuracy(num_labels=cfg.num_cls, task="multilabel")
+        else:
+            self.train_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
+            self.val_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
+            self.test_acc = torchmetrics.Accuracy(num_classes=cfg.num_cls)
         self.save_hyperparameters()
 
     def forward(self, x):
@@ -112,7 +145,10 @@ class LogisticRegression(pl.LightningModule):
             with torch.no_grad():
                 img_feat = get_img_feat(self.model, x, self.paper)
         y_pred = self.forward(img_feat)
-        loss = F.cross_entropy(y_pred, y)
+        if "XRAY" in self.cfg.data_root:
+            loss = F.binary_cross_entropy_with_logits(y_pred, y)
+        else:
+            loss = F.cross_entropy(y_pred, y)
         self.log('train_loss', loss)
         # pred = y_pred.argmax(dim=-1)
         # self.correct += (pred == y).sum()
@@ -144,7 +180,12 @@ class LogisticRegression(pl.LightningModule):
             else:
                 img_feat = get_img_feat(self.model, x, self.paper)
         y_pred = self.forward(img_feat)
-        loss = F.cross_entropy(y_pred, y)
+        
+        if "XRAY" in self.cfg.data_root:
+            loss = F.binary_cross_entropy_with_logits(y_pred, y)
+        else:        
+            loss = F.cross_entropy(y_pred, y)
+            
         pred = y_pred.argmax(dim=-1)
         self.val_acc(y_pred, y)
         self.log('val_acc', self.val_acc, on_step=False, on_epoch=True)
@@ -161,7 +202,10 @@ class LogisticRegression(pl.LightningModule):
             else:
                 img_feat = get_img_feat(self.model, x, self.paper)
         y_pred = self.forward(img_feat)
-        loss = F.cross_entropy(y_pred, y)
+        if "XRAY" in self.cfg.data_root:
+            loss = F.binary_cross_entropy_with_logits(y_pred, y)
+        else:
+            loss = F.cross_entropy(y_pred, y)
         self.test_acc(y_pred, y)
         self.log('test acc', self.test_acc, on_step=False, on_epoch=True)
         self.log('test loss', loss)

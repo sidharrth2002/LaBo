@@ -1,6 +1,8 @@
+import numpy as np
 import utils
 import random
 import torch as th
+import torch
 from PIL import Image
 from pathlib import Path
 import pytorch_lightning as pl
@@ -33,25 +35,77 @@ def _transform(n_px):
 preprocess = _transform(224)
 
 
+# class LinearProbeDataset(Dataset):
+#     """
+#     Provide (image, label) pair for association matrix optimization,
+#     where image is a tensor representing image after transformation
+#     """
+
+#     def __init__(self, cls2img, processed_path, n_shots, cls_names, img_ext='jpg'):
+#         self.data_path = processed_path
+#         self.images = []
+#         self.labels = []
+#         self.img_ext = img_ext
+#         for cls_name, imgs in cls2img.items():
+#             if cls_name not in cls_names:
+#                 continue
+#             label = cls_names.index(cls_name)
+#             if n_shots != 'all':
+#                 imgs = random.sample(imgs, n_shots)
+#             self.images.extend(imgs)
+#             self.labels += [label] * len(imgs)
+
+#     def __len__(self):
+#         return len(self.images)
+
+#     def __getitem__(self, idx):
+#         image = preprocess(
+#             Image.open(
+#                 self.data_path.joinpath('{}{}'.format(self.images[idx],
+#                                                        self.img_ext))))
+#         return image, self.labels[idx]
+
 class LinearProbeDataset(Dataset):
     """
     Provide (image, label) pair for association matrix optimization,
-    where image is a tensor representing image after transformation
+    with support for multi-label by using multi-hot vectors.
     """
-
-    def __init__(self, cls2img, processed_path, n_shots, cls_names, img_ext='jpg'):
+    def __init__(self, cls2img, processed_path, n_shots, cls_names, img_ext='jpg', is_multilabel=False):
         self.data_path = processed_path
         self.images = []
         self.labels = []
         self.img_ext = img_ext
-        for cls_name, imgs in cls2img.items():
-            if cls_name not in cls_names:
-                continue
-            label = cls_names.index(cls_name)
-            if n_shots != 'all':
-                imgs = random.sample(imgs, n_shots)
-            self.images.extend(imgs)
-            self.labels += [label] * len(imgs)
+        self.cls_names = cls_names
+        self.is_multilabel = is_multilabel
+
+        if is_multilabel:
+            # Multi-label: each image might have multiple associated classes
+            # cls2img would be structured as: {class_name: [image1, image2, ...]} but 
+            # some images might appear in multiple classes — need to aggregate
+            img_to_labels = {}
+            for cls_name, imgs in cls2img.items():
+                if cls_name not in cls_names:
+                    continue
+                label_idx = cls_names.index(cls_name)
+                for img in imgs:
+                    if img not in img_to_labels:
+                        img_to_labels[img] = []
+                    img_to_labels[img].append(label_idx)
+
+            for img, labels in img_to_labels.items():
+                multi_hot = np.zeros(len(cls_names))
+                multi_hot[labels] = 1
+                self.images.append(img)
+                self.labels.append(multi_hot)
+        else:
+            for cls_name, imgs in cls2img.items():
+                if cls_name not in cls_names:
+                    continue
+                label = cls_names.index(cls_name)
+                if n_shots != 'all':
+                    imgs = random.sample(imgs, n_shots)
+                self.images.extend(imgs)
+                self.labels += [label] * len(imgs)
 
     def __len__(self):
         return len(self.images)
@@ -59,10 +113,12 @@ class LinearProbeDataset(Dataset):
     def __getitem__(self, idx):
         image = preprocess(
             Image.open(
-                self.data_path.joinpath('{}{}'.format(self.images[idx],
-                                                       self.img_ext))))
-        return image, self.labels[idx]
-
+                self.data_path.joinpath(f"{self.images[idx]}{self.img_ext}")
+            )
+        )
+        label = self.labels[idx]
+        label_tensor = torch.tensor(label, dtype=torch.float32) if self.is_multilabel else label
+        return image, label_tensor
 
 class DataModule(pl.LightningDataModule):
 
@@ -92,19 +148,53 @@ class DataModule(pl.LightningDataModule):
         self.img_ext = img_ext
         self.n_shots = n_shots
 
-    def compute_img_feat(self, cls2img, n_shots):
-        labels = []
-        all_img_paths = []
-        for i, (cls_name, img_names) in enumerate(cls2img.items()):
-            if n_shots !=  'all':
-                img_names = img_names[:n_shots]
-            labels.extend([self.cls_names.index(cls_name)] * len(img_names))
-            all_img_paths.extend(
-                [self.img_path.joinpath('{}{}'.format(img_name, self.img_ext))\
-                     for img_name in img_names])
+    # def compute_img_feat(self, cls2img, n_shots):
+    #     labels = []
+    #     all_img_paths = []
+    #     for i, (cls_name, img_names) in enumerate(cls2img.items()):
+    #         if n_shots !=  'all':
+    #             img_names = img_names[:n_shots]
+    #         labels.extend([self.cls_names.index(cls_name)] * len(img_names))
+    #         all_img_paths.extend(
+    #             [self.img_path.joinpath('{}{}'.format(img_name, self.img_ext))\
+    #                  for img_name in img_names])
 
-        img_feat = utils.prepare_img_feat(all_img_paths)
-        return img_feat, th.tensor(labels)
+    #     img_feat = utils.prepare_img_feat(all_img_paths)
+    #     return img_feat, th.tensor(labels)
+
+    def compute_img_feat(self, cls2img, n_shots, is_multilabel=False):
+        img_to_labels = {}
+
+        if is_multilabel:
+            for cls_name, img_names in cls2img.items():
+                for img_name in img_names:
+                    if img_name not in img_to_labels:
+                        img_to_labels[img_name] = []
+                    img_to_labels[img_name].append(self.cls_names.index(cls_name))
+
+            all_img_paths = []
+            labels = []
+            for img_name, label_indices in img_to_labels.items():
+                multi_hot = np.zeros(len(self.cls_names))
+                multi_hot[label_indices] = 1
+                all_img_paths.append(
+                    self.img_path.joinpath(f"{img_name}{self.img_ext}")
+                )
+                labels.append(multi_hot)
+            img_feat = utils.prepare_img_feat(all_img_paths)
+            return img_feat, torch.tensor(labels, dtype=torch.float32)
+        else:
+            labels = []
+            all_img_paths = []
+            for cls_name, img_names in cls2img.items():
+                if n_shots !=  'all':
+                    img_names = img_names[:n_shots]
+                labels.extend([self.cls_names.index(cls_name)] * len(img_names))
+                all_img_paths.extend(
+                    [self.img_path.joinpath(f"{img_name}{self.img_ext}") for img_name in img_names]
+                )
+            img_feat = utils.prepare_img_feat(all_img_paths)
+            return img_feat, torch.tensor(labels)
 
     def prepare_img_feat_for_splits(self):
         train_img_data_path = self.data_root.joinpath('train_img_data.pth')
@@ -173,8 +263,32 @@ class DataModule(pl.LightningDataModule):
         return self.test_dataloader()
 
 
-class LinearProbeDataModule(DataModule):
+# class LinearProbeDataModule(DataModule):
 
+#     def __init__(self,
+#                  data_root,
+#                  batch_size,
+#                  data_split_path,
+#                  img_path,
+#                  n_shots,
+#                  cls_names, 
+#                  num_workers=0,
+#                  img_ext='jpg'):
+#         super().__init__(data_root, batch_size, data_split_path, img_path, n_shots, cls_names,
+#                          num_workers)
+#         self.n_shots = n_shots
+#         self.img_ext = img_ext
+
+
+#     def setup(self, stage=None):
+#         self.train_dataset = LinearProbeDataset(self.cls2train, self.img_path,
+#                                                 self.n_shots, self.cls_names, img_ext=self.img_ext)
+#         self.val_dataset = LinearProbeDataset(self.cls2val, self.img_path,
+#                                               'all', self.cls_names, img_ext=self.img_ext)
+#         self.test_dataset = LinearProbeDataset(self.cls2test, self.img_path,
+#                                                'all', self.cls_names, img_ext=self.img_ext)
+        
+class LinearProbeDataModule(DataModule):
     def __init__(self,
                  data_root,
                  batch_size,
@@ -188,12 +302,18 @@ class LinearProbeDataModule(DataModule):
                          num_workers)
         self.n_shots = n_shots
         self.img_ext = img_ext
-
+        self.is_multilabel = "XRAY" in data_root
 
     def setup(self, stage=None):
-        self.train_dataset = LinearProbeDataset(self.cls2train, self.img_path,
-                                                self.n_shots, self.cls_names, img_ext=self.img_ext)
-        self.val_dataset = LinearProbeDataset(self.cls2val, self.img_path,
-                                              'all', self.cls_names, img_ext=self.img_ext)
-        self.test_dataset = LinearProbeDataset(self.cls2test, self.img_path,
-                                               'all', self.cls_names, img_ext=self.img_ext)
+        self.train_dataset = LinearProbeDataset(
+            self.cls2train, self.img_path, self.n_shots, self.cls_names,
+            img_ext=self.img_ext, is_multilabel=self.is_multilabel
+        )
+        self.val_dataset = LinearProbeDataset(
+            self.cls2val, self.img_path, 'all', self.cls_names,
+            img_ext=self.img_ext, is_multilabel=self.is_multilabel
+        )
+        self.test_dataset = LinearProbeDataset(
+            self.cls2test, self.img_path, 'all', self.cls_names,
+            img_ext=self.img_ext, is_multilabel=self.is_multilabel
+        )

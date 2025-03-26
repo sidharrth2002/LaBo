@@ -37,3 +37,5 @@ lambda_div = 0.005
 # clip_model = 'ViT-B/16'
 # clip_model = 'medclip'
 clip_model = 'biomedclip'
+
+model_type = 'single_expert'
