@@ -28,7 +28,7 @@ However, the end-to-end architecture depends on the richness of CLIP's neural re
 In this mini-project, an extension of the LaBO framework that uses both CLIP and BioMedCLIP as complementary experts, is explored. Specifically, this is framed as a mixture-of-experts (MoE) problem, where CLIP is the generalist expert and BioMedCLIP is the specialist expert, and a learned gating network determines the relative contribution of each for every input image. The motivation is that different skin lesion may benefit from generalist knowledge (e.g. shape, colour patterns) or specialist biomedical cues (e.g. vascular structure, lesion-specific terminology) to varying degrees. A dynamic gating mechanism allows the model to adapatively leverage either or both experts on a per-instance basis, improving flexibility, accuracy, and interpretability. 
 
 1. Does domain expertise improve interpretability and classification performance in biomedical image analysis?
-2. Can a mixture-of-experts fuse information from these disparate concept space, and does this learned fusion outperform their uni-expert counterparts?
+2. Can a mixture-of-experts fuse information from these disparate concept space, and does this learned combination outperform their uni-expert counterparts?
 
 ... _write what happened_
 
@@ -40,6 +40,13 @@ In this mini-project, an extension of the LaBO framework that uses both CLIP and
 
 = Related Work
 
+Concept Bottleneck Models (CBMs) improve interpretability by incentivising models to predict human-understandable concepts as an intermediate step before the final prediction. In medical imaging tasks like diagnosing arthritis from an X-Ray, a CBM would first predict clinical concepts (e.g. presence of spurs) and then use those concepts to compute severity. Medical practitioners can inspect and intervene on the model's concept predictions. However, traditional CBMs require training labels for each concept and often lag in accuracy compared to their black-ox counterparts. Oikarinen et al. proposed a "label-free" CBM that transforms any network into a CBM without per-concept annotations. Language In a Bottle (LaBO) uses large language models to automate the concept discovery process, with submodular optimisation used to filter relevant and discriminative concepts in the same way a human expert would. 
+
+An orthogonal direction leverages vision-language pre-training to tackle limited labels. CLIP is a foundation model that learns joint image-text representations, and have been proven to transfer to new tasks with little or no task-specific data. In the biomedical domain, variants of the CLIP architecture such as BioMedCLIP re proposed, having been trained on vast amounts of scientific text.
+
+The Mixture-of-Experts architecture is a long-standing proposition in deep learning, that dynamically combines the strenghts of multiple specialised models using a divide-and-conquer approach. Recent work has applied MoEs to fuse generalist and specialist knowledge, which is particularly relevant in biomedical imaging where a model, much like a doctor, would require both broad and fine-grained expertise. Med-MoE introduced a mixture-of-experts design for medical VL tasks using multiple domain-specific experts alongside a global meta-expert, replicating how different medical specialties unite to form robust diagnoses; it atained state-of-the-art performance by activating only a few relevant experts instead of the entire model. Furthermore, because gating decisions reveal which experts were consulted and how much importance was given to their analysis, a clinician can trace deeper intuitions. An Interpretable MoE (IME) uses linear models as experts, with each prediction being accompanied by an exact explanation of which linear expert was used and how it arrived at the outcome. Impressively, this IME approach maintains accuracy comparable to black-box networks, showing that MoE architectures can incorporate interpretability without sacrificing predictive capacity. 
+
+A tangentially relevant proposes a mixture of interpretable experts, via a hybrid neuro-symbolic model that routes a sample subset down a tree to explain a blackbox. Unlike past work that studies and argues for the impact of mixing experts in (i) fully-supervised, (ii) end-to-end deep neural networks, we extend it to concept bottleneck models and question if we can apply the same first principles to align association matrices, instead of simply doing neural combinations, and if these methods have the representational capacity to learn in few-shot settings. 
 
 = Method
 
@@ -48,6 +55,8 @@ In this mini-project, an extension of the LaBO framework that uses both CLIP and
 // The objective of the project is to develop an interpretable skin lesion classification model on the HAM10000 dataset, where interpretability is provided through a concept bottleneck layer, in few-shot and fully-supervised settings.
 
 == Biomedical Data
+
+We select (i) HAM10000 - dermatoscopy and (ii) COVID-QU-Ex - X-Rays as two representative datasets in the biomedical domain. 
 
 HAM10000 is a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018, and is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
 
@@ -63,7 +72,9 @@ HAM10000 is a collection of 10,015 dermatoscopic images representing seven varia
   caption: [Sample Images from the HAM10000 dataset]
 ) <samples>
 
+The COVID-19 Radiography Database comprises 33,920 posterior–anterior chest X-ray images, covering COVID-19, viral/bacterial pneumonia, and normal cases. It integrates multiple datasets, including COVID-19 cases from Qatar, Italy, Spain, and Bangladesh, alongside pre-pandemic pneumonia datasets from the USA. While we initially considered the NIH ChestX-ray14 dataset, its multi-label nature required sigmoid-activated association matrices within our concept bottleneck setup—leading to gradient explosion during training, making it unsuitable for our architecture. 
 
+// The Covid-19 Radiography database contains 33,920 posterior-anterior chest X-ray images spanning Covid-19, normal and pneumonia-infected samples; it is a combination of COVID-19 and past pneumonia datasets, collected across Qatar, Italy, the USA and Bangladesh. We initially tried employing NIH X-Ray, but the architecture did not scale for multi-label classification that then required sigmoid activations on the association matrices, exploding the loss.  
 
 // #figure(
 //     grid(
@@ -274,7 +285,9 @@ The specialist expert outperforms its counterparts by a substantial margin in ul
 
 Interestingly, the Mixture-of-Experts excels at ultra-low-shot scenarios, where MoE partial insights are fused from both experts to provide surprisingly impressive performance ($>70%$) improvement. It must however be noted that the weights learned by gate may be suboptimal when there isn't sufficient supervision to enrich weighting decisions; in early epochs, the average gate weight $g(x_i)$ edges wavers $0.4 arrow.l.r 0.6$ Under mid-range supervision, the results do not consistently favour MoE, since partial supervision is likely insufficient for the gate to converge on an optimal blend, adversely hurting performance instead.
 
-A general observation is that the mixture-of-experts lacks sufficient supervision in few-shot settings to train a sufficiently rich gate, with the full benefits only visible during full supervision. 
+The use of our novel gating entropy loss provides performance boosts in three of five shots, representative of its utility in stabilising gate estimates. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the appendix. 
+
+A general observation is that the mixture-of-experts lacks sufficient supervision in few-shot settings to train a sufficiently rich gate, with the full benefits of combining experts only visible during full supervision. 
 
 === Intuition about Foundation Gates
 
