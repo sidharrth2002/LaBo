@@ -9,12 +9,12 @@
 #show: arkheion.with(
   title: "Bottled Brilliance: Gated Mixture of Experts for Biomedical Explainability",
   authors: (
-    (name: "Sidharrth Nagappan", email: "sn666@cam.ac.uk", affiliation: "University of Cambridge", orcid: "0000-0000-0000-0000"),
+    (name: "Sidharrth Nagappan", email: "sn666@cam.ac.uk", affiliation: "University of Cambridge", orcid: "0000-0002-2928-2641"),
   ),
   // Insert your abstract after the colon, wrapped in brackets.
   // Example: `abstract: [This is my abstract...]`
   abstract: lorem(55),
-  keywords: ("First keyword", "Second keyword", "etc."),
+  keywords: ("Biomedical Explainability", "CLIP", "BioMedCLIP"),
 )
 #set cite(style: "springer-basic")
 #show link: underline
@@ -26,6 +26,9 @@ The adoption of deep learning in computational medicine, particularly in medical
 However, the end-to-end architecture depends on the richness of CLIP's neural representations, whose wide training-base lacks domain-specific grounding. While general visual representations (such as colour and shape) are learnt, they may overlook subtle morphological cues that are essential for deeply nuanced decisions. In contrast, domain-specific models such as BioMedCLIP, trained on scientific literature and imagery, possess specialist knowledge but may lack the broader visual diversity of CLIP. 
 
 In this mini-project, an extension of the LaBO framework that uses both CLIP and BioMedCLIP as complementary experts, is explored. Specifically, this is framed as a mixture-of-experts (MoE) problem, where CLIP is the generalist expert and BioMedCLIP is the specialist expert, and a learned gating network determines the relative contribution of each for every input image. The motivation is that different skin lesion may benefit from generalist knowledge (e.g. shape, colour patterns) or specialist biomedical cues (e.g. vascular structure, lesion-specific terminology) to varying degrees. A dynamic gating mechanism allows the model to adapatively leverage either or both experts on a per-instance basis, improving flexibility, accuracy, and interpretability. 
+
+1. Does domain expertise improve interpretability and classification performance in biomedical image analysis?
+2. Can a mixture-of-experts fuse information from these disparate concept space, and does this learned fusion outperform their uni-expert counterparts?
 
 ... _write what happened_
 
@@ -46,7 +49,7 @@ In this mini-project, an extension of the LaBO framework that uses both CLIP and
 
 == Biomedical Data
 
-We employ HAM10000, a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018. HAM10000 is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
+HAM10000 is a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018, and is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
 
 // A function to represent a virtual image
 #let vimg(body) = {
@@ -59,6 +62,7 @@ We employ HAM10000, a collection of 10,015 dermatoscopic images representing sev
   image("image_samples_ham.png", width: 90%),
   caption: [Sample Images from the HAM10000 dataset]
 ) <samples>
+
 
 
 // #figure(
@@ -95,7 +99,10 @@ Concepts generated for the generalist are augmented with the phrase: "You can be
 
 == Multi-Expert Submodular Optimisation
 
-Submodular optimisation is used to select a discriminative set of concepts that maximise coverage of class semantics while minimizing redundancy. Specifically, we define a set function $f(S) = alpha dot "coverage"(S) - beta dot "redundancy"(S)$, and select the subset $S subset.eq C$ of concepts by approximately maximizing $f(S)$ via a greedy algorithm. We incorporate CLIP embeddings into the selection process to account for global similarity. This also implicitly makes sure that only textual concepts that are semantically understood by the VLM are part of the final selection. We modify this architecture for the mixture-of-experts scenario, doing expert-wise bottleneck maintenance.
+Submodular optimisation is used to select a discriminative set of concepts that maximise coverage of class semantics while minimizing redundancy. Specifically, we define a set function $f(S) = alpha dot "coverage"(S) - beta dot "redundancy"(S)$, and select the subset $S subset.eq C$ of concepts by approximately maximizing $f(S)$ via a greedy algorithm. As an improvement to the original algorithm:
+
+1. We incorporate CLIP embeddings into the selection process to account for global similarity. This also implicitly makes sure that only textual concepts that are semantically understood by the VLM are part of the final selection. We modify this architecture for the mixture-of-experts scenario, doing expert-wise bottleneck maintenance.
+2. Concepts are stemmed and filtered to remove those containing morphological variants of class name tokens, reducing concept leakage.
 
 This mechanism proves particularly valuable for advanced biomedical terminology — such as _telangiectasia_, _ovoid_ or _keratinization_ — which are well-represented in BioMedCLIP’s domain corpus but may not be meaningfully encoded by CLIP. By filtering concepts through this embedding-informed scoring process, we obtain a lean and discriminative concept set that adapts to each expert model. As seen in the example concept list, the generalist leans towards visual descriptors, while the specialist uses very specific terminology, whose visual context is implicitly encoded due to the training corpus #footnote[e.g. "Keratinization is defined as cytoplasmic events that take place"]. It is unsurprising that common words such as "presence", "brown", "areas" and "pigmentation" are widely used in both corpora #footnote[distributions computed using the nltk toolkits and the CLIP similarity scores]. 
 
@@ -135,6 +142,11 @@ During MoE, we freeze the concept selection bottlenecks, and use those selected 
 
 == Mixture-of-Experts
 
+#figure(
+  image("images/bottled_brilliance_moe.png", width: 100%),
+  caption: [Bottled Brilliance Neural Architecture. Additions to LaBO are highlighted in yellow.]
+) <gating_dist>
+
 === The Case for Expertise
 
 As seen in the selection process, some lesions are distinguishable by general visual attributes like colour patterns and asymmetry, which CLIP catures well. However, we hypothesise that there may be useful biomedical descriptors, that lend a help when attempting to interpret decisions. For instance, a "multilobular pattern" has a distinct morphological shape, that when presented to an ordinary person, would appear obscure, but could highlight a clear analogy to a medical professional who would assess that analogy to build a deeper understanding of the diagnosis. The elucidated scenario comprises of a specialist audience, and a "common man" generalist. When representing this neurally, we find that it is reminiscent of the Mixture-of-Experts architecture. 
@@ -143,7 +155,7 @@ As seen in the selection process, some lesions are distinguishable by general vi
 
 CLIP is the choice architecture in LaBO; it learns a transferable visual representation by contrastively training image and text encoders on 400 million (image, text) pairs. It's wide training corpus and general understanding of worldly knowledge makes it a suitable candidate for the generalist. BioMedCLIP is a multimodal biomedical foundation model, trained on PMC-15M, a dataset containing 15 million biomedical image-text pairs that are taken from scientific articles in PubMed Central (PMC). The corpus taxonomy includes dermatology photos, microscopy, histopathology and X-Rays. 
 
-To ensure fair comparison, we standardise the architecture by using ViT-B/16 for both experts, instead of the ViT-L/14 used in LaBO. While ViT-L/14 outperforms the base variant, large-scale BioMedCLIP models are not publicly available; however, scaling laws suggest that performance would improve proportionally across all variants.
+To ensure fair comparison, we standardise the architecture by using ViT-B/16 for both experts, instead of the ViT-L/14 used in LaBO. While ViT-L/14 outperforms the base variant, large-scale BioMedCLIP models are not publicly available; however, scaling laws suggest that performance would improve proportionally across all variants #cite(<Zhai_2022_CVPR>).
 
 === Formulation
 
@@ -186,7 +198,7 @@ $
 
 == Experimental Infrastructure
 
-All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server #footnote[Weights and Biases are used for experimental tracking]. We run all few-shot models for a maximum of 5000 epochs, while restricting fully supervised models to 1500 epochs #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. 
+All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server, while Weights and Biases is used for experimental tracking #cite(<wandb>). We run all few-shot models for a maximum of 5000 epochs, while restricting fully supervised models to 1500 epochs #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. To tackle the cold start issue for noisy gate parameters, we allow a 500 epoch warm start, where the only trainable parameters are the gate. 
 
 = Results
 
@@ -209,21 +221,21 @@ We first evaluate the models in the complete models in a fully supervised settin
       [*Test Loss*]
     ),
     midrule,
-    [ViT-B/16], [79.1], [0.5501], [76.9], [0.6126],
+    [ViT-B/16], [79.1], [0.5501], [76.8], [0.6126],
     [BioMedCLIP], [77.3], [0.69656], [75.03], [0.7916],
-    [MoE], [79.2], [6.1445], [*77.2*], [0.8235],
+    [MoE], [79.2], [6.1445], [*77.21*], [0.8235],
     // [BioMedCLIP], [0.7730], [0.70034], [0.73731], [0.72475],
     botrule
   ),
 )<indiv-model>
 
-Under fully supervised conditions, standard CLIP still outperforms BioMedCLIP, likely because ample supervision allows for a sufficiently comprehensive representation—lessening the advantage of specialized domain expertise. The best performance is attained by the Mixture of Experts (MoE), outperforming both uni-expert counterparts. However, the elevated loss suggests that, while the model achieves strong accuracy, its occasional errors are highly confident misclassifications, heavily penalized by the loss — potentially exacerbated by the gating mechanism’s routing decisions. When analysing the average gate distribution, we find that the gate's $g(x_i)$ begins to fluctuate before reaching a batch-wise average of 0.8 by the final training epoch.  
+Under fully supervised conditions, standard CLIP still outperforms BioMedCLIP, likely because ample supervision allows for a sufficiently comprehensive representation—lessening the advantage of specialized domain expertise. The best performance is attained by the Mixture of Experts (MoE), outperforming both uni-expert counterparts by $approx 2.85%$. However, the elevated loss suggests that, while the model achieves strong accuracy, its occasional errors are highly confident misclassifications — potentially exacerbated by the gating mechanism’s sharp routing decisions. When analysing the average gate distribution, we find that the gate's $g(x_i)$ begins to fluctuate before reaching a batch-wise average of 0.8 by the final training epoch. This shows increased dependence on the specialist in the majority of cases. 
 
 
 == Few-Shot Learning
 
 #figure(
-  caption: [Shot-by-Shot Results (in \%)],
+  caption: [Shot-by-Shot Results (in \%) - ],
   table(
     columns: 11,
     align: (left, center, center, center, center, center, center, center, center, center, center),
@@ -241,10 +253,10 @@ Under fully supervised conditions, standard CLIP still outperforms BioMedCLIP, l
     midrule,
     [G (PC)],
     [23.0], [35.9], [24.4], [34.5], [54.6],
-    [22.4], [38.1], [23.4], [31.9], [52.8],
-    [G (OC)],
-    [33.5], [31.2], [30.8], [32.3], [53.0],
-    [30.9], [34.4], [29.2], [31.1], [**54.0**],
+    [22.4], [38.1], [23.4], [31.9], [52.6],
+    // [G (OC)],
+    // [33.5], [31.2], [30.8], [32.3], [53.0],
+    // [30.9], [34.4], [29.2], [31.1], [**54.0**],
     [S],
     [25.0], [38.8], [*49.4*], [*63.0*], [52.8],
     [27.2], [40.0], [*48.8*], [*61.7*], [52.3],
@@ -253,10 +265,25 @@ Under fully supervised conditions, standard CLIP still outperforms BioMedCLIP, l
     [28.1], [48.1], [27.3], [42.9], [45.1],
     [$"MoE"_"entropy"$],
     [*48.2*], [*49.4*], [24.8], [34.6], [*54.6*],
-    [*45.8*], [*50.2*], [23.5], [34.2], [52.8],
+    [*45.8*], [*50.2*], [23.5], [34.2], [*52.8*],
     botrule
   )
 ) <few-shot-results>
+
+The specialist expert outperforms its counterparts by a substantial margin in ultra-low-shot settings (1-2 shots), showing that domain-specific knowledge provides strong performance boosts when there is minimal labelled data. However, under high-supervision and full-supervision, the specialist advantage diminishes, with the generalist outperforming it as soon as there is enough data to learn broad visual features and enrich the association matrix.
+
+Interestingly, the Mixture-of-Experts excels at ultra-low-shot scenarios, where MoE partial insights are fused from both experts to provide surprisingly impressive performance ($>70%$) improvement. It must however be noted that the weights learned by gate may be suboptimal when there isn't sufficient supervision to enrich weighting decisions; in early epochs, the average gate weight $g(x_i)$ edges wavers $0.4 arrow.l.r 0.6$ Under mid-range supervision, the results do not consistently favour MoE, since partial supervision is likely insufficient for the gate to converge on an optimal blend, adversely hurting performance instead.
+
+A general observation is that the mixture-of-experts lacks sufficient supervision in few-shot settings to train a sufficiently rich gate, with the full benefits only visible during full supervision. 
+
+=== Intuition about Foundation Gates
+
+One solution to this problem would be to train the gate on a tangentially similar task and port the weights, so the starting representation would have some intuition about which types of images would be suitable for which expert. However, this would require clear cross-task alignment, and there is little formal proof to support this conjecture. 
+
+// The specialist expert outperforms it's counterparts by an unsurprisingly large margin in ultra-low-shot settings. While it was outperformed by the generalist under full supervision, it can be hypothesised that the utility of concept expertise is particularly useful when there is extremely little data supervision to learn a sufficiently rich representation on. 
+
+// In few-shot scenarios, we make interesting observations about the fluctuations. In ultra-low-shot scenarios and high-shot scenarios (including under full supervision as seen in #ref(<indiv-model>)), the Mixture-of-Experts outperforms it's simpler counterparts. For the low-shot case, this could be attributed to the inherent randomness of the routing; since both experts perform similarly, this improvement could only be attributed to randomness. In the higher-shot scenario, we hypothesise that the improvement could be due to having sufficient supervision to learn a richer gate parameterisation. Nevertheless, in few-shot scenarios, the gating mechanism doesn't prove to be as effective as it is under full supervision for this reason.
+
 
 
 == Expanding to NIH X-Rays
@@ -308,6 +335,8 @@ Test Accuracy = 88.101, Macro F1 = 0.092
 )
 
 == Gating Fluctuations
+
+The gate provides fascinating insights into the inner workings of the model 
 
 #figure(
   image("val_gating_distribution.png", width: 80%),
