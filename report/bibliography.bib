@@ -85,3 +85,141 @@ author = {Biewald, Lukas},
     year      = {2022},
     pages     = {12104-12113}
 }
+
+@inproceedings{jiang-etal-2024-med,
+    title = "{M}ed-{M}o{E}: Mixture of Domain-Specific Experts for Lightweight Medical Vision-Language Models",
+    author = "Jiang, Songtao  and
+      Zheng, Tuo  and
+      Zhang, Yan  and
+      Jin, Yeying  and
+      Yuan, Li  and
+      Liu, Zuozhu",
+    editor = "Al-Onaizan, Yaser  and
+      Bansal, Mohit  and
+      Chen, Yun-Nung",
+    booktitle = "Findings of the Association for Computational Linguistics: EMNLP 2024",
+    month = nov,
+    year = "2024",
+    address = "Miami, Florida, USA",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2024.findings-emnlp.221/",
+    doi = "10.18653/v1/2024.findings-emnlp.221",
+    pages = "3843--3860",
+    abstract = "Recent advancements in general-purpose or domain-specific multimodal large language models (LLMs) have witnessed remarkable progress for medical decision-making. However, they are designated for specific classification or generative tasks, and require model training or finetuning on large-scale datasets with sizeable parameters and tremendous computing, hindering their clinical utility across diverse resource-constrained scenarios in practice. In this paper, we propose a novel and lightweight framework Med-MoE (Mixture-of-Experts) that tackles both discriminative and generative multimodal medical tasks. The learning of Med-MoE consists of three steps: multimodal medical alignment, Instruction tuning and routing, and domain-specific MoE tuning. After aligning multimodal medical images with LLM tokens, we then enable the model for different multimodal medical tasks with instruction tuning, together with a trainable router tailored for expert selection across input modalities. Finally, the model is tuned by integrating the router with multiple domain-specific experts, which are selectively activated and further empowered by meta experts. Comprehensive experiments on both open- and close-end medical question answering (Med-VQA) and image classification tasks across datasets such as VQA-RAD, SLAKE and Path-VQA demonstrate that our model can achieve performance superior to or on par with state-of-the-art baselines, while only requiring approximately 30{\%}-50{\%} of activated model parameters. Extensive analysis and ablations corroborate the effectiveness and practical utility of our method."
+}
+
+@article{RAHMAN2021104319,
+title = {Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-ray images},
+journal = {Computers in Biology and Medicine},
+volume = {132},
+pages = {104319},
+year = {2021},
+issn = {0010-4825},
+doi = {https://doi.org/10.1016/j.compbiomed.2021.104319},
+url = {https://www.sciencedirect.com/science/article/pii/S001048252100113X},
+author = {Tawsifur Rahman and Amith Khandakar and Yazan Qiblawey and Anas Tahir and Serkan Kiranyaz and Saad Bin {Abul Kashem} and Mohammad Tariqul Islam and Somaya {Al Maadeed} and Susu M. Zughaier and Muhammad Salman Khan and Muhammad E.H. Chowdhury},
+keywords = {COVID-19, Image enhancement, Chest X-ray images, Convolutional neural networks, Lung segmentation},
+abstract = {Computer-aided diagnosis for the reliable and fast detection of coronavirus disease (COVID-19) has become a necessity to prevent the spread of the virus during the pandemic to ease the burden on the healthcare system. Chest X-ray (CXR) imaging has several advantages over other imaging and detection techniques. Numerous works have been reported on COVID-19 detection from a smaller set of original X-ray images. However, the effect of image enhancement and lung segmentation of a large dataset in COVID-19 detection was not reported in the literature. We have compiled a large X-ray dataset (COVQU) consisting of 18,479 CXR images with 8851 normal, 6012 non-COVID lung infections, and 3616 COVID-19 CXR images and their corresponding ground truth lung masks. To the best of our knowledge, this is the largest public COVID positive database and the lung masks. Five different image enhancement techniques: histogram equalization (HE), contrast limited adaptive histogram equalization (CLAHE), image complement, gamma correction, and balance contrast enhancement technique (BCET) were used to investigate the effect of image enhancement techniques on COVID-19 detection. A novel U-Net model was proposed and compared with the standard U-Net model for lung segmentation. Six different pre-trained Convolutional Neural Networks (CNNs) (ResNet18, ResNet50, ResNet101, InceptionV3, DenseNet201, and ChexNet) and a shallow CNN model were investigated on the plain and segmented lung CXR images. The novel U-Net model showed an accuracy, Intersection over Union (IoU), and Dice coefficient of 98.63%, 94.3%, and 96.94%, respectively for lung segmentation. The gamma correction-based enhancement technique outperforms other techniques in detecting COVID-19 from the plain and the segmented lung CXR images. Classification performance from plain CXR images is slightly better than the segmented lung CXR images; however, the reliability of network performance is significantly improved for the segmented lung images, which was observed using the visualization technique. The accuracy, precision, sensitivity, F1-score, and specificity were 95.11%, 94.55%, 94.56%, 94.53%, and 95.59% respectively for the segmented lung images. The proposed approach with very reliable and comparable performance will boost the fast and robust COVID-19 detection using chest X-ray images.}
+}
+
+@ARTICLE{9144185,
+  author={Chowdhury, Muhammad E. H. and Rahman, Tawsifur and Khandakar, Amith and Mazhar, Rashid and Kadir, Muhammad Abdul and Mahbub, Zaid Bin and Islam, Khandakar Reajul and Khan, Muhammad Salman and Iqbal, Atif and Emadi, Nasser Al and Reaz, Mamun Bin Ibne and Islam, Mohammad Tariqul},
+  journal={IEEE Access}, 
+  title={Can AI Help in Screening Viral and COVID-19 Pneumonia?}, 
+  year={2020},
+  volume={8},
+  number={},
+  pages={132665-132676},
+  keywords={Diseases;Lung;Databases;X-ray imaging;Machine learning;Tools;COVID-19;Artificial intelligence;COVID-19 pneumonia;machine learning;transfer learning;viral pneumonia;computer-aided diagnostic tool},
+  doi={10.1109/ACCESS.2020.3010287}}
+
+@article{nih-xray,
+  author       = {Xiaosong Wang and
+                  Yifan Peng and
+                  Le Lu and
+                  Zhiyong Lu and
+                  Mohammadhadi Bagheri and
+                  Ronald M. Summers},
+  title        = {ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on
+                  Weakly-Supervised Classification and Localization of Common Thorax
+                  Diseases},
+  journal      = {CoRR},
+  volume       = {abs/1705.02315},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1705.02315},
+  eprinttype    = {arXiv},
+  eprint       = {1705.02315},
+  timestamp    = {Mon, 11 Nov 2024 14:54:08 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/WangPLLBS17.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@misc{yang2025mixtureexpertsintrinsicallyinterpretable,
+      title={Mixture of Experts Made Intrinsically Interpretable}, 
+      author={Xingyi Yang and Constantin Venhoff and Ashkan Khakzar and Christian Schroeder de Witt and Puneet K. Dokania and Adel Bibi and Philip Torr},
+      year={2025},
+      eprint={2503.07639},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2503.07639}, 
+}
+
+@article{Ismail2022InterpretableMO,
+  title={Interpretable Mixture of Experts for Structured Data},
+  author={Aya Abdelsalam Ismail and Sercan {\"O}. Arik and Jinsung Yoon and Ankur Taly and Soheil Feizi and Tomas Pfister},
+  journal={ArXiv},
+  year={2022},
+  volume={abs/2206.02107},
+  url={https://api.semanticscholar.org/CorpusID:249394928}
+}
+
+@inproceedings{oikarinenlabel,
+  title={Label-free Concept Bottleneck Models},
+  author={Oikarinen, Tuomas and Das, Subhro and Nguyen, Lam M and Weng, Tsui-Wei},
+  booktitle={International Conference on Learning Representations},
+  year={2023}
+}
+
+@inproceedings{yang2023language,
+  title={Language in a bottle: Language model guided concept bottlenecks for interpretable image classification},
+  author={Yang, Yue and Panagopoulou, Artemis and Zhou, Shenghao and Jin, Daniel and Callison-Burch, Chris and Yatskar, Mark},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={19187--19197},
+  year={2023}
+}
+
+@InProceedings{pmlr-v202-ghosh23c,
+  title = 	 {Dividing and Conquering a {B}lack{B}ox to a Mixture of Interpretable Models: Route, Interpret, Repeat},
+  author =       {Ghosh, Shantanu and Yu, Ke and Arabshahi, Forough and Batmanghelich, Kayhan},
+  booktitle = 	 {Proceedings of the 40th International Conference on Machine Learning},
+  pages = 	 {11360--11397},
+  year = 	 {2023},
+  editor = 	 {Krause, Andreas and Brunskill, Emma and Cho, Kyunghyun and Engelhardt, Barbara and Sabato, Sivan and Scarlett, Jonathan},
+  volume = 	 {202},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {23--29 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {https://proceedings.mlr.press/v202/ghosh23c/ghosh23c.pdf},
+  url = 	 {https://proceedings.mlr.press/v202/ghosh23c.html},
+  abstract = 	 {ML model design either starts with an interpretable model or a Blackbox and explains it post hoc. Blackbox models are flexible but difficult to explain, while interpretable models are inherently explainable. Yet, interpretable models require extensive ML knowledge and tend to be less flexible, potentially underperforming than their Blackbox equivalents. This paper aims to blur the distinction between a post hoc explanation of a Blackbox and constructing interpretable models. Beginning with a Blackbox, we iteratively carve out a mixture of interpretable models and a residual network. The interpretable models identify a subset of samples and explain them using First Order Logic (FOL), providing basic reasoning on concepts from the Blackbox. We route the remaining samples through a flexible residual. We repeat the method on the residual network until all the interpretable models explain the desired proportion of data. Our extensive experiments show that our route, interpret, and repeat approach (1) identifies a richer diverse set of instance-specific concepts with high concept completeness via interpretable models by specializing in various subsets of data without compromising in performance, (2) identifies the relatively “harder” samples to explain via residuals, (3) outperforms the interpretable by-design models by significant margins during test-time interventions, (4) can be used to fix the shortcut learned by the original Blackbox.}
+}
+
+@misc{zhao2024hypermoebettermixtureexperts,
+      title={HyperMoE: Towards Better Mixture of Experts via Transferring Among Experts}, 
+      author={Hao Zhao and Zihan Qiu and Huijia Wu and Zili Wang and Zhaofeng He and Jie Fu},
+      year={2024},
+      eprint={2402.12656},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2402.12656}, 
+}
+
+@misc{eigen2014learningfactoredrepresentationsdeep,
+      title={Learning Factored Representations in a Deep Mixture of Experts}, 
+      author={David Eigen and Marc'Aurelio Ranzato and Ilya Sutskever},
+      year={2014},
+      eprint={1312.4314},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/1312.4314}, 
+}

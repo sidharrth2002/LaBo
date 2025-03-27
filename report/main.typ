@@ -1,6 +1,9 @@
 #import "@preview/arkheion:0.1.0": arkheion, arkheion-appendices
 #import "@preview/tablem:0.2.0": tablem, three-line-table
 #import "@preview/showybox:2.0.4": showybox
+#import "@preview/subpar:0.2.2"
+
+#set par(justify: true)
 
 #let toprule = table.hline(stroke: 0.08em)
 #let botrule = toprule
@@ -14,7 +17,7 @@
   // Insert your abstract after the colon, wrapped in brackets.
   // Example: `abstract: [This is my abstract...]`
   abstract: lorem(55),
-  keywords: ("Biomedical Explainability", "CLIP", "BioMedCLIP"),
+  keywords: ("Biomedical Explainability", "CLIP", "BioMedCLIP", "Mixture of Experts"),
 )
 #set cite(style: "springer-basic")
 #show link: underline
@@ -30,7 +33,7 @@ In this mini-project, an extension of the LaBO framework that uses both CLIP and
 1. Does domain expertise improve interpretability and classification performance in biomedical image analysis?
 2. Can a mixture-of-experts fuse information from these disparate concept space, and does this learned combination outperform their uni-expert counterparts?
 
-... _write what happened_
+We do this across two diverse biomedical datasets, namely in dermatoscopy and radiology. 
 
 //  often outperformed by their more specialised counterparts in highly specialised biomedical tasks, such as computational X-Ray and skin lesion analysis. 
 
@@ -40,13 +43,13 @@ In this mini-project, an extension of the LaBO framework that uses both CLIP and
 
 = Related Work
 
-Concept Bottleneck Models (CBMs) improve interpretability by incentivising models to predict human-understandable concepts as an intermediate step before the final prediction. In medical imaging tasks like diagnosing arthritis from an X-Ray, a CBM would first predict clinical concepts (e.g. presence of spurs) and then use those concepts to compute severity. Medical practitioners can inspect and intervene on the model's concept predictions. However, traditional CBMs require training labels for each concept and often lag in accuracy compared to their black-ox counterparts. Oikarinen et al. proposed a "label-free" CBM that transforms any network into a CBM without per-concept annotations. Language In a Bottle (LaBO) uses large language models to automate the concept discovery process, with submodular optimisation used to filter relevant and discriminative concepts in the same way a human expert would. 
+Concept Bottleneck Models (CBMs) improve interpretability by incentivising models to predict human-understandable concepts as an intermediate step before the final prediction. In medical imaging tasks like diagnosing arthritis from an X-Ray, a CBM would first predict clinical concepts (e.g. presence of spurs) and then use those concepts to compute severity. Medical practitioners can inspect and intervene on the model's concept predictions. However, traditional CBMs require training labels for each concept and often lag in accuracy compared to their black-ox counterparts. "Label-free" CBMs transform any network into a CBM without per-concept annotations using rudimentary LLMs #cite(<oikarinenlabel>) for concept discovery. Language In a Bottle (LaBO) extended this paradigm with submodular optimisation to filter relevant and discriminative concepts in the same way a human expert would #cite(<yang2023language>). 
 
-An orthogonal direction leverages vision-language pre-training to tackle limited labels. CLIP is a foundation model that learns joint image-text representations, and have been proven to transfer to new tasks with little or no task-specific data. In the biomedical domain, variants of the CLIP architecture such as BioMedCLIP re proposed, having been trained on vast amounts of scientific text.
+An orthogonal direction leverages vision-language pre-training to tackle limited labels. CLIP is a foundation model that learns joint image-text representations, and have been proven to transfer to new tasks with little or no task-specific data. In the biomedical domain, variants of the CLIP architecture such as BioMedCLIP were proposed, having been trained on vast amounts of scientific text.
 
-The Mixture-of-Experts architecture is a long-standing proposition in deep learning, that dynamically combines the strenghts of multiple specialised models using a divide-and-conquer approach. Recent work has applied MoEs to fuse generalist and specialist knowledge, which is particularly relevant in biomedical imaging where a model, much like a doctor, would require both broad and fine-grained expertise. Med-MoE introduced a mixture-of-experts design for medical VL tasks using multiple domain-specific experts alongside a global meta-expert, replicating how different medical specialties unite to form robust diagnoses; it atained state-of-the-art performance by activating only a few relevant experts instead of the entire model. Furthermore, because gating decisions reveal which experts were consulted and how much importance was given to their analysis, a clinician can trace deeper intuitions. An Interpretable MoE (IME) uses linear models as experts, with each prediction being accompanied by an exact explanation of which linear expert was used and how it arrived at the outcome. Impressively, this IME approach maintains accuracy comparable to black-box networks, showing that MoE architectures can incorporate interpretability without sacrificing predictive capacity. 
+The Mixture-of-Experts architecture is a long-standing proposition in deep learning, that dynamically combines the strenghts of multiple specialised models using a divide-and-conquer approach #cite(<yang2025mixtureexpertsintrinsicallyinterpretable>) #cite(<eigen2014learningfactoredrepresentationsdeep>). Recent work has applied MoEs to fuse generalist and specialist knowledge, which is particularly relevant in biomedical imaging where a model, much like a doctor, would require both broad and fine-grained expertise. Med-MoE introduced a mixture-of-experts design for medical VL tasks using multiple domain-specific experts alongside a global meta-expert, replicating how different medical specialties unite to form robust diagnoses; it atained state-of-the-art performance by activating only a few relevant experts instead of the entire model #cite(<jiang-etal-2024-med>). Furthermore, because gating decisions reveal which experts were consulted and how much importance was given to their analysis, a clinician can trace deeper intuitions. An Interpretable MoE (IME) uses linear models as experts, with each prediction being accompanied by an exact explanation of which linear expert was used and how it arrived at the outcome #cite(<Ismail2022InterpretableMO>). Impressively, this IME approach maintains accuracy comparable to black-box networks, showing that MoE architectures can incorporate interpretability without sacrificing predictive capacity. 
 
-A tangentially relevant proposes a mixture of interpretable experts, via a hybrid neuro-symbolic model that routes a sample subset down a tree to explain a blackbox. Unlike past work that studies and argues for the impact of mixing experts in (i) fully-supervised, (ii) end-to-end deep neural networks, we extend it to concept bottleneck models and question if we can apply the same first principles to align association matrices, instead of simply doing neural combinations, and if these methods have the representational capacity to learn in few-shot settings. 
+A tangentially relevant proposes a mixture of interpretable experts, via a hybrid neuro-symbolic model that routes a sample subset down a tree to explain a blackbox #cite(<pmlr-v202-ghosh23c>). Unlike past work that studies and argues for the impact of mixing experts in (i) fully-supervised, (ii) end-to-end deep neural networks, we extend it to concept bottleneck models and question if we can apply the same first principles to align association matrices, instead of simply doing neural combinations, and if these methods have the representational capacity to learn in few-shot settings. 
 
 = Method
 
@@ -56,7 +59,7 @@ A tangentially relevant proposes a mixture of interpretable experts, via a hybri
 
 == Biomedical Data
 
-We select (i) HAM10000 - dermatoscopy and (ii) COVID-QU-Ex - X-Rays as two representative datasets in the biomedical domain. 
+We select (i) HAM10000 (dermatoscopy) and (ii) COVID-QU-Ex (X-Rays) as two representative datasets in the biomedical domain. 
 
 HAM10000 is a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018, and is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
 
@@ -72,7 +75,12 @@ HAM10000 is a collection of 10,015 dermatoscopic images representing seven varia
   caption: [Sample Images from the HAM10000 dataset]
 ) <samples>
 
-The COVID-19 Radiography Database comprises 33,920 posterior–anterior chest X-ray images, covering COVID-19, viral/bacterial pneumonia, and normal cases. It integrates multiple datasets, including COVID-19 cases from Qatar, Italy, Spain, and Bangladesh, alongside pre-pandemic pneumonia datasets from the USA. While we initially considered the NIH ChestX-ray14 dataset, its multi-label nature required sigmoid-activated association matrices within our concept bottleneck setup—leading to gradient explosion during training, making it unsuitable for our architecture. 
+The COVID-19 Radiography Database comprises 33,920 posterior–anterior chest X-ray images, covering COVID-19, viral/bacterial pneumonia, and normal cases #cite(<RAHMAN2021104319>)#cite(<9144185>). It integrates multiple datasets, including COVID-19 cases from Qatar, Italy, Spain, and Bangladesh, alongside pre-pandemic pneumonia datasets from the USA. Training, validation and test splits are  While we initially considered the NIH ChestX-ray14 dataset #cite(<nih-xray>), its multi-label nature required sigmoid-activated association matrices within our concept bottleneck setup — leading to gradient explosion during training, making it unsuitable for our architecture. 
+
+#figure(
+  image("images/covid-qu-samples.png", width: 80%),
+  caption: [Sample Images from the COVID-QU-Ex dataset]
+) <samples>
 
 // The Covid-19 Radiography database contains 33,920 posterior-anterior chest X-ray images spanning Covid-19, normal and pneumonia-infected samples; it is a combination of COVID-19 and past pneumonia datasets, collected across Qatar, Italy, the USA and Bangladesh. We initially tried employing NIH X-Ray, but the architecture did not scale for multi-label classification that then required sigmoid activations on the association matrices, exploding the loss.  
 
@@ -90,7 +98,7 @@ The COVID-19 Radiography Database comprises 33,920 posterior–anterior chest X-
 
 LaBO employed sentence parsing using a T5 to extract semantic concepts from LLM-generated sentences #cite(<T5>). We conjecture that this approach is suboptimal, leads to information loss and the quality of the final model is dependent on the accuracy of the trained parsing model. Instead, we propose enforcing JSON structure via Pydantic in prompts we send to our LLM suite (LLAMA, DeepSeek, Meditron and OpenAI's 4o), directly extracting phrasal concepts without intermediate parsing @llama @deepseek. 
 
-Concepts generated for the generalist are augmented with the phrase: "You can be a bit technical." #footnote[After several rounds of prompt engineering, this produced the best results.] Our enhanced prompt engineering outperforms the manual parsing algorithm, as shown in #ref(<few-shot-results>)
+Concepts generated for the generalist are augmented with the phrase: "You can be a bit technical." #footnote[After several rounds of prompt engineering, this produced the best results.] Our enhanced prompt engineering outperforms the manual parsing algorithm.
 
 #showybox(
   title: "Technical Prompt Generation",
@@ -122,7 +130,7 @@ This mechanism proves particularly valuable for advanced biomedical terminology 
     stroke: 1pt,
     radius: 8pt,
     inset: 0pt,
-    height: 3cm,
+    height: 3.8cm,
     grid(
       columns: (1fr, auto, 1fr),
       gutter: 2pt,
@@ -139,12 +147,14 @@ This mechanism proves particularly valuable for advanced biomedical terminology 
   - Erythematous base
   - Focal Nodularity
   - Multilobular pattern
+  ...
 ], [
   *Global Generalist Concepts:*
   - Crusty texture
   - Small diameter
   - Pink
   - Light brown
+  ...
 ])
 
 During MoE, we freeze the concept selection bottlenecks, and use those selected during their corresponding uni-expert training cycles. This allows for fair comparisons and ensures that the data distribution is the only independent factor. 
@@ -160,7 +170,7 @@ During MoE, we freeze the concept selection bottlenecks, and use those selected 
 
 === The Case for Expertise
 
-As seen in the selection process, some lesions are distinguishable by general visual attributes like colour patterns and asymmetry, which CLIP catures well. However, we hypothesise that there may be useful biomedical descriptors, that lend a help when attempting to interpret decisions. For instance, a "multilobular pattern" has a distinct morphological shape, that when presented to an ordinary person, would appear obscure, but could highlight a clear analogy to a medical professional who would assess that analogy to build a deeper understanding of the diagnosis. The elucidated scenario comprises of a specialist audience, and a "common man" generalist. When representing this neurally, we find that it is reminiscent of the Mixture-of-Experts architecture. 
+As seen in the selection process, some lesions are distinguishable by general visual attributes like colour patterns and asymmetry, which CLIP catures well. However, we hypothesise that there may be useful biomedical descriptors, that help when attempting to interpret decisions. For instance, a "multilobular pattern" has a distinct morphological shape, that when presented to an ordinary person, would appear obscure, but could highlight a clear analogy to a medical professional who would assess that analogy to build a deeper understanding of the diagnosis. The elucidated scenario comprises of a specialist audience, and a "common man" generalist. When representing this neurally, we find that it is reminiscent of the Mixture-of-Experts architecture #cite(<eigen2014learningfactoredrepresentationsdeep>). 
 
 === The Experts
 
@@ -176,7 +186,30 @@ $
   {D^(g) in.small RR^(B times m_g), D^(s) in.small RR^(B times m_s)}
 $
 
-where $m_g$ and $m_s$ denote the number of generalist and specialist concepts respectively. $A^(g) in.small RR^(K times m_g)$ and $A^(s) in.small RR^(K times m_s)$ are learnable association matrices that map concepts to class logits. Following the original paper, these associations are initialised with language model priors. Class-level predictions from each expert are computed as $S^(g) = D^(g) × (A^(g))^T$ and $S^(s) = D^(s) × (A^(s))^T$. 
+where $m_g$ and $m_s$ denote the number of generalist and specialist concepts respectively. $A^(g) in.small RR^(K times m_g)$ and $A^(s) in.small RR^(K times m_s)$ are learnable association matrices that map concepts to class logits. To encourage semantically meaningful class–concept associations, the individual association matrices are initialised using language model priors by selecting the closest concepts to each class name in the CLIP embedding space.
+
+
+#showybox(
+  title: "",
+  frame: (
+    border-color: green,
+    title-color: green.lighten(30%),
+    body-color: green.lighten(95%),
+    footer-color: green.lighten(80%)
+  ),
+  footer: ""
+)[
+ $ mat(
+  1, 1, 0, 0, 0, 0;
+  0, 0, 1, 0, 1, 0;
+  0, 0, 0, 1, 0, 1;
+) $
+
+Weight initialisation for association matrix, where rows = classes, and columns = concepts.
+]
+
+
+Class-level predictions from each expert are computed as $S^(g) = D^(g) × (A^(g))^T$ and $S^(s) = D^(s) × (A^(s))^T$. 
 
 The gating network, tuned to inhibit over-parametrisation, is a two-layer neural network with a _LeakyReLU_ activation and sigmoid output, defined as:
 
@@ -209,9 +242,35 @@ $
 
 == Experimental Infrastructure
 
-All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server, while Weights and Biases is used for experimental tracking #cite(<wandb>). We run all few-shot models for a maximum of 5000 epochs, while restricting fully supervised models to 1500 epochs #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. To tackle the cold start issue for noisy gate parameters, we allow a 500 epoch warm start, where the only trainable parameters are the gate. 
+All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server, while Weights and Biases is used for experimental tracking #cite(<wandb>). We run all few-shot models for a maximum of 5000 epochs and run tests based on the best validation performance #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. To tackle the cold start issue for noisy gate parameters under few-shot scenarios, a 500 epoch warm start is allowed, where the only trainable parameters are the gate.
 
 = Results
+
+== Loss Ablation
+
+Primary hyperparameter tuning is done on HAM10000, with the best configurations immediately ported over to COVID-QU-Ex.
+
+#figure(
+  caption: [Shot-by-Shot Results],
+  table(
+    columns: 7,
+    align: (left, center, center, center, center, center, center, center, center, center, center, center, center),
+    stroke: none,
+    toprule,
+    table.header(
+      [*Variation*],
+      table.cell(colspan: 6, align: center)[*Validation Accuracy*],
+    ),
+    midrule,
+    [MoE],
+    [0.314], [0.464], [0.248], [*0.439*], [0.464], [*0.792*],
+    [$"MoE"_"entropy"$ ($lambda = 0.2$)],
+    [*0.482*], [*0.494*], [0.248], [0.346], [*0.539*], [0.786],
+    botrule
+  )
+)
+
+The use of our gating entropy loss provides performance boosts in three of five shots, representative of its utility in stabilising gate estimates, and discouraging the gating network from collapsing too early to a single expert. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the loss computation. 
 
 == Fully Supervised Baselines
 
@@ -243,7 +302,7 @@ We first evaluate the models in the complete models in a fully supervised settin
 Under fully supervised conditions, standard CLIP still outperforms BioMedCLIP, likely because ample supervision allows for a sufficiently comprehensive representation—lessening the advantage of specialized domain expertise. The best performance is attained by the Mixture of Experts (MoE), outperforming both uni-expert counterparts by $approx 2.85%$. However, the elevated loss suggests that, while the model achieves strong accuracy, its occasional errors are highly confident misclassifications — potentially exacerbated by the gating mechanism’s sharp routing decisions. When analysing the average gate distribution, we find that the gate's $g(x_i)$ begins to fluctuate before reaching a batch-wise average of 0.8 by the final training epoch. This shows increased dependence on the specialist in the majority of cases. 
 
 
-== Few-Shot Learning
+== Skin Lesion Classification
 
 #figure(
   caption: [Shot-by-Shot Results (in \%) - ],
@@ -285,8 +344,6 @@ The specialist expert outperforms its counterparts by a substantial margin in ul
 
 Interestingly, the Mixture-of-Experts excels at ultra-low-shot scenarios, where MoE partial insights are fused from both experts to provide surprisingly impressive performance ($>70%$) improvement. It must however be noted that the weights learned by gate may be suboptimal when there isn't sufficient supervision to enrich weighting decisions; in early epochs, the average gate weight $g(x_i)$ edges wavers $0.4 arrow.l.r 0.6$ Under mid-range supervision, the results do not consistently favour MoE, since partial supervision is likely insufficient for the gate to converge on an optimal blend, adversely hurting performance instead.
 
-The use of our novel gating entropy loss provides performance boosts in three of five shots, representative of its utility in stabilising gate estimates. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the appendix. 
-
 A general observation is that the mixture-of-experts lacks sufficient supervision in few-shot settings to train a sufficiently rich gate, with the full benefits of combining experts only visible during full supervision. 
 
 === Intuition about Foundation Gates
@@ -298,15 +355,10 @@ One solution to this problem would be to train the gate on a tangentially simila
 // In few-shot scenarios, we make interesting observations about the fluctuations. In ultra-low-shot scenarios and high-shot scenarios (including under full supervision as seen in #ref(<indiv-model>)), the Mixture-of-Experts outperforms it's simpler counterparts. For the low-shot case, this could be attributed to the inherent randomness of the routing; since both experts perform similarly, this improvement could only be attributed to randomness. In the higher-shot scenario, we hypothesise that the improvement could be due to having sufficient supervision to learn a richer gate parameterisation. Nevertheless, in few-shot scenarios, the gating mechanism doesn't prove to be as effective as it is under full supervision for this reason.
 
 
-
-== Expanding to NIH X-Rays
-
-Linear Probe:
-
-Val Accuracy: 89.883, Val std: 0.000
-/home/sn666/.conda/envs/labo/lib/python3.9/site-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
-  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
-Test Accuracy = 88.101, Macro F1 = 0.092
+// Val Accuracy: 89.883, Val std: 0.000
+// /home/sn666/.conda/envs/labo/lib/python3.9/site-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no true nor predicted samples. Use `zero_division` parameter to control this behavior.
+//   _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+// Test Accuracy = 88.101, Macro F1 = 0.092
 
 // #figure(
 //   caption: [Individual Model Results],
@@ -349,17 +401,63 @@ Test Accuracy = 88.101, Macro F1 = 0.092
 
 == Gating Fluctuations
 
-The gate provides fascinating insights into the inner workings of the model 
+The gate provides fascinating insights into the inner workings of the model. Across 1- to 2-shot settings, there is a dramatic fluctuation in $g(x)$ as it lacks sufficient training examples to learn a stable preference, bouncing back between near-0 and near-1. In the mid-shot graphs (4-shot and 8-shot), the gate still oscillates in phases but displays a modestly smoother pattern -- though there are steep dips towards 0 or 1 at certain epochs; likely indicative of preference collapses. By 16-shot, the trend stabilises, with a surprising number of samples favouring the generalist over the specialist. Under fully supervised training, the network has enough labels to make more confident routing decisions, with the histogram staying relatively consistent across epochs. Unsurprisingly, the specialist is favoured when all training samples are considered. Overall, it seems clear that sufficient supervision is necessary for the gate to build a stable representation. 
+
+#subpar.grid(
+  figure(image("images/1-shot-gate.png"), caption: [
+    1-shot
+  ]), <a>,
+  figure(image("images/2-shot-gate.png"), caption: [
+   2-shot.
+  ]), <b>,
+  figure(image("images/4-shot-gate.png"), caption: [
+    4-shot 
+  ]), <c>,
+  figure(image("images/8-shot-gate.png"), caption: [
+    8-shot
+  ]), <d>,
+    figure(image("images/16-shot-gate.png"), caption: [
+      16-shot
+  ]), <e>,
+    figure(image("images/all-shot-gate.png"), caption: [
+      All-shot
+  ]), <e>,
+
+  columns: (1fr, 1fr),
+  caption: [Gating Distribution After Entropy Loss],
+  label: <full>,
+)
+
+== COVID-QU-Ex
 
 #figure(
-  image("val_gating_distribution.png", width: 80%),
-  caption: [Validation Gating Distribution Under Full Supervision - There is clearly a collapse where the specialist expert is being almost completely relied on close to the end of training.]
-) <gating_dist>
+  caption: [Shot-by-Shot Results (in \%) - ],
+  table(
+    columns: 11,
+    align: (left, center, center, center, center, center, center, center, center, center, center),
+    stroke: none,
+    toprule,
+    table.header(
+      [*Architecture*],
+      table.cell(colspan: 5, align: center)[*Validation Accuracy*],
+      table.cell(colspan: 5, align: center)[*Test Accuracy*]
+    ),
+    midrule,
+    [],
+    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot],
+    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot],
+    midrule,
+    [G],
 
+    botrule
+  )
+) <covid-x-results>
 
 = Conclusion and Limitations
 
 - Interestingly, there is potential for leakage, since the concept's actual semantic definition can be overly synonymous in certain cases. However, since the specialist expert did not outperform the generalist under the fully supervised setting, the leakage isn't immediately obvious.  
+
+- Use of transfer learning across experts #cite(<zhao2024hypermoebettermixtureexperts>)
 
 = Notes
 
@@ -387,34 +485,34 @@ If there's time:
 - Linear probe NIH-XRay
 - Apply best method from above
 
-= Results
+// = Results
 
-#figure(
-  caption: [Individual Model Results],
-  table(
-    columns: 8,
-    align: center,
-    stroke: none,
-    toprule,
-    table.header(
-      [*Dataset*],
-      [*Concept Set*],
-      [*Variant*],
-      [*Shot*],
-      [*Val Acc*],
-      [*Val Loss*],
-      [*Test Acc*],
-      [*Test Loss*]
-    ),
-    midrule,
-    [HAM10000], [Generalist], [ViT-B/16], [All], [0.791], [0.55009], [0.76915], [0.61261],
-    [HAM10000], [Generalist], [ViT-L/14], [All], [0.792], [0.61521], [0.79900], [0.61158],
-    [HAM10000], [Generalist], [BioMedCLIP], [All], [0.773], [0.69656], [0.75025], [0.7916],
-    [HAM10000], [Specialist], [BioMedCLIP], [All], [0.7730], [0.70034], [0.73731], [0.72475],
-    [HAM10000], [MoE], [ViT-B/16 + BioMedCLIP], [All], [sdf], [dfs], [0.7721], [0.8235],
-    botrule
-  ),
-) <individual-model-results>
+// #figure(
+//   caption: [Individual Model Results],
+//   table(
+//     columns: 8,
+//     align: center,
+//     stroke: none,
+//     toprule,
+//     table.header(
+//       [*Dataset*],
+//       [*Concept Set*],
+//       [*Variant*],
+//       [*Shot*],
+//       [*Val Acc*],
+//       [*Val Loss*],
+//       [*Test Acc*],
+//       [*Test Loss*]
+//     ),
+//     midrule,
+//     [HAM10000], [Generalist], [ViT-B/16], [All], [0.791], [0.55009], [0.76915], [0.61261],
+//     [HAM10000], [Generalist], [ViT-L/14], [All], [0.792], [0.61521], [0.79900], [0.61158],
+//     [HAM10000], [Generalist], [BioMedCLIP], [All], [0.773], [0.69656], [0.75025], [0.7916],
+//     [HAM10000], [Specialist], [BioMedCLIP], [All], [0.7730], [0.70034], [0.73731], [0.72475],
+//     [HAM10000], [MoE], [ViT-B/16 + BioMedCLIP], [All], [sdf], [dfs], [0.7721], [0.8235],
+//     botrule
+//   ),
+// ) <individual-model-results>
 
 = 
 
@@ -563,41 +661,41 @@ If there's time:
 // )
 // )
 
-// #figure(
-//   caption: [Shot-by-Shot Results],
-//   table(
-//     columns: 13,
-//     align: (left, center, center, center, center, center, center, center, center, center, center, center, center),
-//     stroke: none,
-//     toprule,
-//     table.header(
-//       [*Arch.*],
-//       table.cell(colspan: 6, align: center)[*Validation Accuracy*],
-//       table.cell(colspan: 6, align: center)[*Test Accuracy*]
-//     ),
-//     midrule,
-//     [],
-//     [1], [2], [4], [8t], [16], [All],
-//     [1], [2], [4], [8], [16], [All],
-//     midrule,
-//     [G (PC)],
-//     [0.230], [0.359], [0.244], [0.345], [*0.546*], [—],
-//     [0.2239], [0.3811], [0.2338], [0.3194], [*0.5284*], [—],
-//     [G (OC)],
-//     [0.335], [0.312], [0.308], [0.323], [0.530], [0.810],
-//     [0.3095], [0.3443], [0.2915], [0.3114], [0.540], [0.769],
-//     [S],
-//     [0.250], [0.388], [*0.494*], [*0.630*], [0.528], [—],
-//     [0.2716], [*0.40*], [*0.488*], [*0.617*], [0.5234], [0.7503],
-//     [MoE (st.)],
-//     [0.314], [0.464], [0.248], [0.439], [0.464], [0.792],
-//     [0.2806], [0.4806], [0.2726], [0.4289], [0.4508], [*0.772*],
-//     [MoE (st.)],
-//     [*0.482*], [*0.494*], [0.248], [0.346], [0.539], [—],
-//     [*0.458*], [*0.502*], [0.2348], [0.3423], [0.5114], [0.7592],
-//     botrule
-//   )
-// )
+#figure(
+  caption: [Shot-by-Shot Results],
+  table(
+    columns: 13,
+    align: (left, center, center, center, center, center, center, center, center, center, center, center, center),
+    stroke: none,
+    toprule,
+    table.header(
+      [*Arch.*],
+      table.cell(colspan: 6, align: center)[*Validation Accuracy*],
+      table.cell(colspan: 6, align: center)[*Test Accuracy*]
+    ),
+    midrule,
+    [],
+    [1], [2], [4], [8t], [16], [All],
+    [1], [2], [4], [8], [16], [All],
+    midrule,
+    [G (PC)],
+    [0.230], [0.359], [0.244], [0.345], [*0.546*], [—],
+    [0.2239], [0.3811], [0.2338], [0.3194], [*0.5284*], [—],
+    [G (OC)],
+    [0.335], [0.312], [0.308], [0.323], [0.530], [0.810],
+    [0.3095], [0.3443], [0.2915], [0.3114], [0.540], [0.769],
+    [S],
+    [0.250], [0.388], [*0.494*], [*0.630*], [0.528], [—],
+    [0.2716], [*0.40*], [*0.488*], [*0.617*], [0.5234], [0.7503],
+    [MoE (st.)],
+    [0.314], [0.464], [0.248], [0.439], [0.464], [0.792],
+    [0.2806], [0.4806], [0.2726], [0.4289], [0.4508], [*0.772*],
+    [MoE (st.)],
+    [*0.482*], [*0.494*], [0.248], [0.346], [0.539], [0.786],
+    [*0.458*], [*0.502*], [0.2348], [0.3423], [0.5114], [0.7592],
+    botrule
+  )
+)
 // 
 // #figure(
 //   caption: [Shot-by-Shot Results],
