@@ -10,7 +10,8 @@
 #let midrule = table.hline(stroke: 0.05em)
 
 #show: arkheion.with(
-  title: "Bottled Brilliance: Gated Mixture of Experts for Biomedical Explainability",
+  title: "Bottled Brilliance: Gated Mixture of Experts for 
+  Biomedical Explainability",
   authors: (
     (name: "Sidharrth Nagappan", email: "sn666@cam.ac.uk", affiliation: "University of Cambridge", orcid: "0000-0002-2928-2641"),
   ),
@@ -43,13 +44,13 @@ We do this across two diverse biomedical datasets, namely in dermatoscopy and ra
 
 = Related Work
 
-Concept Bottleneck Models (CBMs) improve interpretability by incentivising models to predict human-understandable concepts as an intermediate step before the final prediction. In medical imaging tasks like diagnosing arthritis from an X-Ray, a CBM would first predict clinical concepts (e.g. presence of spurs) and then use those concepts to compute severity. Medical practitioners can inspect and intervene on the model's concept predictions. However, traditional CBMs require training labels for each concept and often lag in accuracy compared to their black-ox counterparts. "Label-free" CBMs transform any network into a CBM without per-concept annotations using rudimentary LLMs #cite(<oikarinenlabel>) for concept discovery. Language In a Bottle (LaBO) extended this paradigm with submodular optimisation to filter relevant and discriminative concepts in the same way a human expert would #cite(<yang2023language>). 
+Concept Bottleneck Models (CBMs) improve interpretability by incentivising models to predict human-understandable concepts as an intermediate step before the final prediction #cite(<pmlr-v119-koh20a>) In medical imaging tasks like diagnosing arthritis from an X-Ray, a CBM would first predict clinical concepts (e.g. presence of spurs) and then use those concepts to compute severity. Medical practitioners can inspect and intervene on the model's concept predictions. However, traditional CBMs require training labels for each concept and often lag in accuracy compared to their black-ox counterparts. "Label-free" CBMs transform any network into a CBM without per-concept annotations using rudimentary LLMs #cite(<oikarinenlabel>) for concept discovery. Language In a Bottle (LaBO) extended this paradigm with submodular optimisation to filter relevant and discriminative concepts in the same way a human expert would #cite(<yang2023language>). 
 
 An orthogonal direction leverages vision-language pre-training to tackle limited labels. CLIP is a foundation model that learns joint image-text representations, and have been proven to transfer to new tasks with little or no task-specific data. In the biomedical domain, variants of the CLIP architecture such as BioMedCLIP were proposed, having been trained on vast amounts of scientific text.
 
 The Mixture-of-Experts architecture is a long-standing proposition in deep learning, that dynamically combines the strenghts of multiple specialised models using a divide-and-conquer approach #cite(<yang2025mixtureexpertsintrinsicallyinterpretable>) #cite(<eigen2014learningfactoredrepresentationsdeep>). Recent work has applied MoEs to fuse generalist and specialist knowledge, which is particularly relevant in biomedical imaging where a model, much like a doctor, would require both broad and fine-grained expertise. Med-MoE introduced a mixture-of-experts design for medical VL tasks using multiple domain-specific experts alongside a global meta-expert, replicating how different medical specialties unite to form robust diagnoses; it atained state-of-the-art performance by activating only a few relevant experts instead of the entire model #cite(<jiang-etal-2024-med>). Furthermore, because gating decisions reveal which experts were consulted and how much importance was given to their analysis, a clinician can trace deeper intuitions. An Interpretable MoE (IME) uses linear models as experts, with each prediction being accompanied by an exact explanation of which linear expert was used and how it arrived at the outcome #cite(<Ismail2022InterpretableMO>). Impressively, this IME approach maintains accuracy comparable to black-box networks, showing that MoE architectures can incorporate interpretability without sacrificing predictive capacity. 
 
-A tangentially relevant proposes a mixture of interpretable experts, via a hybrid neuro-symbolic model that routes a sample subset down a tree to explain a blackbox #cite(<pmlr-v202-ghosh23c>). Unlike past work that studies and argues for the impact of mixing experts in (i) fully-supervised, (ii) end-to-end deep neural networks, we extend it to concept bottleneck models and question if we can apply the same first principles to align association matrices, instead of simply doing neural combinations, and if these methods have the representational capacity to learn in few-shot settings. 
+A tangentially relevant proposes a mixture of interpretable experts, via a hybrid neuro-symbolic model that routes a sample subset down a tree to explain a blackbox #cite(<pmlr-v202-ghosh23c>). Unlike past work that studies and argues for the impact of mixing experts in (i) fully-supervised, (ii) end-to-end deep neural networks, we extend it to concept bottleneck models and question if we can apply the same first principles to align association matrices, instead of simply doing neural combinations, and if these methods have the capacity to be performant in few-shot settings. 
 
 = Method
 
@@ -118,10 +119,10 @@ Concepts generated for the generalist are augmented with the phrase: "You can be
 
 == Multi-Expert Submodular Optimisation
 
-Submodular optimisation is used to select a discriminative set of concepts that maximise coverage of class semantics while minimizing redundancy. Specifically, we define a set function $f(S) = alpha dot "coverage"(S) - beta dot "redundancy"(S)$, and select the subset $S subset.eq C$ of concepts by approximately maximizing $f(S)$ via a greedy algorithm. As an improvement to the original algorithm:
+Submodular optimisation is used to select a discriminative set of concepts that maximise coverage of class semantics while minimizing redundancy. Specifically, we define a set function $f(S) = alpha dot "coverage"(S) - beta dot "redundancy"(S)$, and select the subset $S subset.eq C$ of concepts by approximately maximizing $f(S)$ via a greedy algorithm. As an improvement to the original paper's algorithm:
 
-1. We incorporate CLIP embeddings into the selection process to account for global similarity. This also implicitly makes sure that only textual concepts that are semantically understood by the VLM are part of the final selection. We modify this architecture for the mixture-of-experts scenario, doing expert-wise bottleneck maintenance.
-2. Concepts are stemmed and filtered to remove those containing morphological variants of class name tokens, reducing concept leakage.
+1. We incorporate CLIP + BioMedCLIP embeddings into the selection process to account for global similarity. This also implicitly makes sure that only textual concepts that are semantically understood by the VLM are part of the final selection. We modify this architecture for the mixture-of-experts scenario, doing expert-wise bottleneck maintenance.
+2. Concepts are stemmed, filtered for stopwords, and pruned to remove any that contain morphological variants of class names — done to reduce semantic leakage and prevent the model from trivially associating concepts with their target classes.
 
 This mechanism proves particularly valuable for advanced biomedical terminology — such as _telangiectasia_, _ovoid_ or _keratinization_ — which are well-represented in BioMedCLIP’s domain corpus but may not be meaningfully encoded by CLIP. By filtering concepts through this embedding-informed scoring process, we obtain a lean and discriminative concept set that adapts to each expert model. As seen in the example concept list, the generalist leans towards visual descriptors, while the specialist uses very specific terminology, whose visual context is implicitly encoded due to the training corpus #footnote[e.g. "Keratinization is defined as cytoplasmic events that take place"]. It is unsurprising that common words such as "presence", "brown", "areas" and "pigmentation" are widely used in both corpora #footnote[distributions computed using the nltk toolkits and the CLIP similarity scores]. 
 
@@ -217,7 +218,7 @@ $
   g(x_i) = σ ( W_2 ( "LeakyReLU"( W_1 ( "LayerNorm"(x_i)))))
 $
 
-$g(x_i) in.small [0, 1]$ dynamically determines the cross-expert weighting for each input:
+$g(x_i) in.small [0, 1]$ dynamically determines the cross-expert weighting for each input and produces a weighted combination:
 
 $
   S_i = g(x_i) ⋅ S_i^(s) + (1 - g(x_i)) ⋅ S_i^(g)
@@ -270,7 +271,7 @@ Primary hyperparameter tuning is done on HAM10000, with the best configurations 
   )
 )
 
-The use of our gating entropy loss provides performance boosts in three of five shots, representative of its utility in stabilising gate estimates, and discouraging the gating network from collapsing too early to a single expert. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the loss computation. 
+The use of our gating entropy loss provides performance boosts in three of five shots (with an average improvement of 6.19%), representative of its utility in stabilising gate estimates, with an average and discouraging the gating network from collapsing too early to a single expert. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the loss computation. 
 
 == Fully Supervised Baselines
 
@@ -424,31 +425,31 @@ The gate provides fascinating insights into the inner workings of the model. Acr
   ]), <e>,
 
   columns: (1fr, 1fr),
-  caption: [Gating Distribution After Entropy Loss],
+  caption: [Gating Distribution Acros Different Shots],
   label: <full>,
 )
 
 == COVID-QU-Ex
 
 #figure(
-  caption: [Shot-by-Shot Results (in \%) - ],
+  caption: [Shot-by-Shot Results (in \%) for COVID-QU-Ex],
   table(
-    columns: 11,
+    columns: 13,
     align: (left, center, center, center, center, center, center, center, center, center, center),
     stroke: none,
     toprule,
     table.header(
-      [*Architecture*],
+      [*Arch.*],
       table.cell(colspan: 5, align: center)[*Validation Accuracy*],
       table.cell(colspan: 5, align: center)[*Test Accuracy*]
     ),
     midrule,
     [],
-    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot],
-    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot],
+    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot], [All],
+    [1-shot], [2-shot], [4-shot], [8-shot], [16-shot], [All],
     midrule,
-    [G],
-
+    [G], [44.4], [48.09], [46.94], [59.20], [64.93], [87.36], [43.96], [47.86], [45.81], [58.94], [63.57], [86.6],
+    [S], [39.0], [40.48], [69.65], [68.79], [67.7], [89.93], [38.53], [41.06], [69.41], [68.04], [69.22], [89.89],
     botrule
   )
 ) <covid-x-results>
