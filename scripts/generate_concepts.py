@@ -70,11 +70,11 @@ if DATASET_TO_USE == "HAM10000":
                         messages=[
                             {
                                 "role": "system",
-                                "content": "Extract the concepts from the class to be used in a Concept Bottleneck Model for Skin Cancer classification from dermatoscopic images.",
+                                "content": "Extract the concepts from the class for Skin Cancer classification from dermatoscopic images.",
                             },
                             {
                                 "role": "user",
-                                "content": "Describe the {} of the {} disease in HAM10000 that can be used as visual concepts in my Concept Bottleneck Model for Skin Cancer classification.".format(
+                                "content": "Describe the {} of the {} disease that can be used as visual concepts for Skin Cancer classification.".format(
                                     feature, class_name
                                 ),
                             },
@@ -91,7 +91,7 @@ if DATASET_TO_USE == "HAM10000":
                 else:
                     response = ollama.generate(
                         model=LLMOptions.LLAMA,
-                        prompt=f"Describe the {feature} of the {class_name} disease in HAM10000 that can be used as concepts in my Concept Bottleneck Model for Skin Cancer classification.",
+                        prompt=f"Describe the {feature} of the {class_name} disease for Skin Cancer classification.",
                         format=ConceptOutput.model_json_schema(),
                     )
 
@@ -170,7 +170,7 @@ elif DATASET_TO_USE == "COVIDX":
                             },
                             {
                                 "role": "user",
-                                "content": "Describe the {} of the {} disease in X-Ray that can be used as concepts in my Concept Bottleneck Model for the X-Ray classification.".format(
+                                "content": "Describe the {} of the {} disease in X-Ray that can be used as concepts for X-Ray classification.".format(
                                     feature.replace("_", " "), class_name
                                 ),
                             },
