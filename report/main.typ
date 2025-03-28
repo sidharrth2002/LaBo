@@ -105,7 +105,7 @@ While most prior efforts apply mixture-of-experts to fully supervised, end-to-en
 
 We select (i) HAM10000 (dermatoscopy) and (ii) COVID-QU-Ex (X-Rays) as two representative datasets in the biomedical domain. 
 
-HAM10000 is a collection of 10,015 dermatoscopic images representing seven variations of skin lesions #footnote[melanoma, basal cell carcinoma, and benign keratosis-like lesions] that are compiled from various populations @Tschandl_2018, and is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
+HAM10000 is a collection of 10,015 dermatoscopic images representing seven variations of skin lesions (Keratosis-Like Lesions, Melanocytic Nevi, Dermatofibroma, Melanoma, Vascular Lesions, Basal Cell Carcinoma and Actinic Keratoses), that are compiled from various populations @Tschandl_2018, and is commonly used as a benchmark dataset for medical vision encoders. We use the same training, validation and testing splits as the dataset providers.
 
 #figure(
   image("images/covid-qu-samples.png", width: 80%),
@@ -273,13 +273,30 @@ $
   S_i = g(x_i) ⋅ S_i^(s) + (1 - g(x_i)) ⋅ S_i^(g)
 $
 
-The Gated MoE model is trained by minimizing a total loss that consists of a classification loss (cross-entropy for single-label and binary cross-entropy for multi-label) and a gate entropy loss, that encourages the gating network to avoid overly deterministic decisions and completely depend on one of the experts (by collapsing $g(x_i) arrow {0, 1}$). Additional regularisers are added to encourage prediction diversity (disincentivize model from collapsing similarity scores) and sparse concept-to-class activations #footnote[the original paper did not employ these losses in their final ablations, so we replicate those same decisions]. In the results section, we share an ablation between the loss combinations with and without gating entropy. 
+The Gated MoE model's primary classification loss employs cross-entropy. The original paper also proposed two regularisation terms: a diversity loss to prevent uniform similarity scores across classes (encouraging sharper decision boundaries).
 
 $
-  ℒ = "CrossEntropy"(S, y) + λ_{div} ⋅ ( - E_{i} [ "Var"_{k} (S_{i,k}) ] ) + λ_{"L1"} ⋅ ( ||A^(g)||_1 + ||A^(s)||_1 )
+  ℒ_"classification" = "CrossEntropy"(S, y) + λ_{"div"} ⋅ ( - E_{i} [ "Var"_{k} (S_{i,k}) ] )
 $
+
+In addition to these, we propose a gate-entropy loss that discourages the gating network from converging to overly deterministic decisions and completely depending on one of the experts (by collapsing $g(x_i) arrow {0, 1}$). An ablation to demonstrate the utility of this addition is done.
+
+$
+  ℒ_"gate_entropy"(g_i) = - (g_i dot log(g_i + epsilon) + (1 - g_i) dot log(1 - g_i + epsilon))
+$
+
+$
+  ℒ = ℒ_"classification" + lambda_"ge" * ℒ_"gate_entropy"
+$
+
+// is trained by minimizing a total loss that consists of a classification loss (cross-entropy) and a gate entropy loss, that encourages the gating network to avoid overly deterministic decisions and completely depend on one of the experts (by collapsing $g(x_i) arrow {0, 1}$). 
+
+// In the results section, we share an ablation between the loss combinations with and without gating entropy. 
+
 
 // Let $x in.small RR^d$ be the input image embedding, $C^(g) in.small RR^(m_g times d)$ be generalist concept embeddings, where there are $m_g$ concepts and $C^(s) in.small RR^(m_s times d)$ be specialist concept embeddings, where there are $m_s$ concepts. $A^(g) in.small RR^(K times m_g)$ and $A^(s) in.small RR^(K times m_s)$ are learnable association matrices between classes and generalist concepts. $g(x) in.small [0, 1]$ is the gating scalar produced by the gating network for an input $x$. The class-level predictions from each expert are computed:
+
+// to encourage prediction diversity (disincentivize model from collapsing similarity scores) and sparse concept-to-class activations #footnote[the original paper did not employ these losses in their final ablations, so we replicate those same decisions].
 
 // $
 // S^(g) = D^(g) times (A^(g))^T
@@ -292,7 +309,7 @@ $
 
 == Experimental Infrastructure
 
-All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server, while Weights and Biases is used for experimental tracking #cite(<wandb>). We trained all few-shot models for a maximum of 5000 epochs and run tests based on the best validation performance #footnote[tuned to prevent overfitting where the training accuracy can quickly hit 100% due to under-parametrisation]. To tackle the cold start issue for noisy gate parameters under few-shot scenarios, a 500 epoch warm start is allowed, where the only trainable parameters are the gate.
+All experiments were run on a single NVIDIA L40S GPU in the Department of Computer Science's GPU server, while Weights and Biases is used for experimental tracking #cite(<wandb>). We trained all few-shot models for a maximum of 5000 epochs, and run tests based on the best validation performance. To tackle the cold start issue for noisy gate parameters under few-shot scenarios, a 500 epoch warm start is allowed, where the only trainable parameters are the gate. We reuse the submodular optimisation hyperparameters $alpha$ and $beta$ from the original paper across the few-shot runs. 
 
 = Results
 
@@ -314,14 +331,14 @@ Primary hyperparameter tuning is done on HAM10000, with the best configurations 
     midrule,
     [], [1-shot], [2-shot], [4-shot], [8-shot], [16-shot], [All],
     [MoE],
-    [0.314], [0.464], [0.248], [*0.439*], [0.464], [*0.792*],
-    [$"MoE"_"entropy"$ ($lambda = 0.2$)],
-    [*0.482*], [*0.494*], [0.248], [0.346], [*0.539*], [0.786],
+    [31.4], [46.4], [24.8], [*43.9*], [46.4], [*79.2*],
+    [$"MoE"_"entropy"$ ($lambda_"ge" = 0.2$)],
+    [*48.2*], [*49.4*], [24.8], [34.6], [*53.9*], [78.6],
     botrule
   )
 )
 
-The use of our gating entropy loss provides performance boosts in three of five shots (with an average improvement of 6.19%), representative of its utility in stabilising gate estimates, with an average and discouraging the gating network from collapsing too early to a single expert. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the loss computation. 
+The use of our gating entropy loss provides performance boosts in three of five shots (with an average improvement of 6.19%), representative of its utility in stabilising gate estimates, and discouraging the gating network from collapsing too early to a single expert. The weighting $lambda_"entropy"$ for the entropy loss component is set at 0.2, to avoid saturating the loss computation. 
 
 == Fully Supervised Baselines
 
@@ -515,7 +532,7 @@ Under full supervision, MoE attains the highest accuracy of all, with an outstan
 
 #figure(
   image("images/covidx-full-supervision-hist.png", width: 70%),
-  caption: [Fully Supervised Gating Distribution for Covid-X]
+  caption: [Fully Supervised Gating Distribution for COVID-QU-Ex]
 ) <covidx-gating_dist>
 
 The specialist is also consistently strong across all shots, with incremental improvements as more data is appended -- unlike in dermatoscopy where the generalist eventually catches up under full supervision. BioMedCLIP was trained with an extensive volume of X-Ray data ($10^6$ samples), an order of magnitude higher than dermatoscopic samples. Crucially, X-Ray classification often hinges on subtle clinical markers (e.g. faint opacities, lesions) which are difficult to identify on a purely visual or textural level in bitonal images, likely requiring domain-specific context and known prior connections in the scientific literature to help the model make accurate diagnoses. Meanwhile, the maximum gate value ($approx 0.71$) in #ref(<val-gate-max>) shows that the gating network never collapses to rely exclusively on the specialist—indicating that, even under full supervision, the model still draws on generalist cues when beneficial.
