@@ -27,7 +27,7 @@
 
 = Introduction
 
-The adoption of deep learning in highly sensitive domains like computational medicine have led to increased calls for robust explainability mechanisms, that medical practitioners can use to trace the reasoning behind specific decisions #cite(<blackbox>). While post-hoc interpretability methods are rampant in the literature, the detachment from the internal workings of the model can result in incomplete explanations #cite(<Rudin2019>), and the "completeness" paradigm is a crucial part of building trust in these automated systems. Concept Bottleneck Models (CBM) organically incentivise models to route decisions through an interpretable concept layer, where each neuron in the bottleneck corresponds to a human-understandable concept. However, annotating concepts can be costly, leading to Language in a Bottle (LaBO) introducing an end-to-end pipeline that leverages Large Language Models (LLMs) to build and enrich concept bottlenecks, before using Vision Language Models (VLMs) such as CLIP to align images and textual concepts #cite(<yang2023language>). Although effective against a range of datasets, performance on the one biomedical dataset they used is among the lowest, having been outperformed by a simple linear probe. 
+The adoption of deep learning in highly sensitive domains like computational medicine have led to increased calls for robust explainability mechanisms, that medical practitioners can use to trace the reasoning behind specific decisions #cite(<blackbox>). While post-hoc interpretability methods are rampant in the literature, the detachment from the internal workings of the model can result in incomplete explanations #cite(<Rudin2019>), and the "completeness" paradigm is a crucial part of building trust in these automated systems. Concept Bottleneck Models (CBM) organically incentivise models to route decisions through an interpretable concept layer, where each neuron in the bottleneck corresponds to a human-understandable concept #cite(<pmlr-v119-koh20a>). However, annotating concepts can be costly, leading to Language in a Bottle (LaBO) introducing an end-to-end pipeline that leverages Large Language Models (LLMs) to build and enrich concept bottlenecks, before using Vision Language Models (VLMs) such as CLIP to align images and textual concepts #cite(<yang2023language>) #cite(<CLIP>). Although effective against a range of datasets, performance on the one biomedical dataset they used is among the lowest, having been outperformed by a simple linear probe. 
 
 This raises the question of whether domain knowledge can be implicitly plugged into these models, and whether it can enhance their ability to form robust representations of nuanced datasets—particularly those that rely on subtle morphological cues beyond standard visual descriptors. Following this this line of reasoning, we explore whether the need for domain expertise can be addressed through a mixture of these experts, with each building their own bottlenecks and harmonising representations. Specifically, we question whether combining generalist and specialist models can yield concept bottlenecks that are both performant in end-to-end classification and capable of offering fine-grained, semantically grounded interpretability. 
 
@@ -165,21 +165,33 @@ This mechanism proves particularly valuable for advanced biomedical terminology 
   )
 }
 
-#divided([
-  *Global Specialist Concepts:*
-  - Keratinization patterns
-  - Erythematous base
-  - Focal Nodularity
-  - Multilobular pattern
-  ...
-], [
-  *Global Generalist Concepts:*
-  - Crusty texture
-  - Small diameter
-  - Pink
-  - Light brown
-  ...
-])
+// #divided([
+//   *Global Specialist Concepts:*
+//   - Keratinization patterns
+//   - Erythematous base
+//   - Focal Nodularity
+//   - Multilobular pattern
+//   ...
+// ], [
+//   *Global Generalist Concepts:*
+//   - Crusty texture
+//   - Small diameter
+//   - Pink
+//   - Light brown
+//   ...
+// ])
+
+#subpar.grid(
+  figure(image("images/HAM10000 Generalist.png"), caption: [
+  ]), <a>,
+  figure(image("images/HAM10000 Specialist.png"), caption: [
+  ]), <b>,
+
+  columns: (1fr, 1fr),
+  
+  caption: [Concept Bottleneck Scores for the (a) _Generalist_ and (b) _Specialist_ in HAM10000 - Note the use of increasingly technical concepts in the specialist bottleneck, although several general, visual descriptors are represented in both bottlenecks.],
+  label: <full>,
+)
 
 During MoE, we freeze the concept selection bottlenecks, and use those selected during their corresponding uni-expert training cycles. This allows for fair comparisons and ensures that the data distribution is the only independent factor. 
 
@@ -198,7 +210,7 @@ As seen in the selection process, some lesions are distinguishable by general vi
 
 === The Experts
 
-CLIP is the choice architecture in LaBO; it learns a transferable visual representation by contrastively training image and text encoders on 400 million (image, text) pairs #cite(<CLIP>). It's wide training corpus and general understanding of worldly knowledge makes it a suitable candidate for the generalist. BioMedCLIP is a multimodal biomedical foundation model, trained on PMC-15M, a dataset containing 15 million biomedical image-text pairs that are taken from scientific articles in PubMed Central (PMC). The corpus taxonomy includes dermatology photos, microscopy, histopathology and X-Rays. 
+CLIP is the choice architecture in LaBO; it learns a transferable visual representation by contrastively training image and text encoders on 400 million (image, text) pairs #cite(<CLIP>). It's wide training corpus and general understanding of worldly knowledge makes it a suitable candidate for the generalist. BioMedCLIP is a multimodal biomedical foundation model, a large-scale dataset comprising 15 million biomedical image-text pairs extracted from scientific publications in PubMed Central (PMC). The corpus taxonomy includes dermatoloscopy images, microscopy, histopathology and radiography. 
 
 To ensure a fair comparison, we standardise the architecture by using ViT-B/16 for both experts, instead of the ViT-L/14 used in LaBO. While ViT-L/14 outperforms the base variant, large-scale BioMedCLIP models are not publicly available; however, scaling laws suggest that performance would improve proportionally by increasing transformer complexity #cite(<Zhai_2022_CVPR>).
 
@@ -492,7 +504,7 @@ Under full supervision, MoE attains the highest accuracy of all, with an outstan
   caption: [Fully Supervised Gating Distribution for Covid-X]
 ) <covidx-gating_dist>
 
-The specialist is also consistently strong across all shots, with incremental improvements as more data is appended -- unlike in dermatoscopy where the generalist eventually catches up other full supervision. BioMedCLIP was trained with an extensive volume of X-Ray data ($10^6$ samples), an order of magnitude higher than dermatoscopic samples. Crucially, X-Ray classification often hinges on subtle clinical markers (e.g. faint opacities, lesions) which are difficult to identify on a purely visual or textural level, requiring domain-specific context and known prior connections in the scientific literature to help the model make accurate diagnoses.
+The specialist is also consistently strong across all shots, with incremental improvements as more data is appended -- unlike in dermatoscopy where the generalist eventually catches up under full supervision. BioMedCLIP was trained with an extensive volume of X-Ray data ($10^6$ samples), an order of magnitude higher than dermatoscopic samples. Crucially, X-Ray classification often hinges on subtle clinical markers (e.g. faint opacities, lesions) which are difficult to identify on a purely visual or textural level, likely requiring domain-specific context and known prior connections in the scientific literature to help the model make accurate diagnoses.
 
 //  the specialist outperforms the generalist in fully supervised settings, likely due to the extensive volume of X-Ray data ($10^6$ samples) used to train BioMedCLIP. 
 
@@ -515,31 +527,31 @@ However, few-shot performance is still relatively unstable, despite regularisati
 
 // - Interestingly, there is potential for leakage, since the concept's actual semantic definition can be overly synonymous in certain cases. However, since the specialist expert did not outperform the generalist under the fully supervised setting, the leakage isn't immediately obvious.  
 
-= Notes
+// = Notes
 
-- Using ViT-B/16 to establish the baseline in this paper - because it outputs 512 dimensions, which is the same as MedCLIP and BioMedCLIP
-- Motivation - biomedical explainability is important - do more specialised variants do a better job
-- We can't directly assess the quality of the explanation, but we can implicitly assess them through the expressiveness of the concept alignment
-- Hypothesis - combine generalist + specialist improve interpretability and concepts
-- Try initialising association weights using `gen_init_weight_from_cls_name` -- might be useful in few-shot scenario
-- Some of the accuracies in the table were from the last epoch, not the best epoch - make sure to check
+// - Using ViT-B/16 to establish the baseline in this paper - because it outputs 512 dimensions, which is the same as MedCLIP and BioMedCLIP
+// - Motivation - biomedical explainability is important - do more specialised variants do a better job
+// - We can't directly assess the quality of the explanation, but we can implicitly assess them through the expressiveness of the concept alignment
+// - Hypothesis - combine generalist + specialist improve interpretability and concepts
+// - Try initialising association weights using `gen_init_weight_from_cls_name` -- might be useful in few-shot scenario
+// - Some of the accuracies in the table were from the last epoch, not the best epoch - make sure to check
 
-== Research Questions
-1. First, does separating concept spaces improve interpretability and classification performance? 
-2. Second, can learned fusion weights outperform naive averaging of similarity scores? 
-3. And third, does the specialist model contribute more on rare or complex conditions?
+// == Research Questions
+// 1. First, does separating concept spaces improve interpretability and classification performance? 
+// 2. Second, can learned fusion weights outperform naive averaging of similarity scores? 
+// 3. And third, does the specialist model contribute more on rare or complex conditions?
 
-== Methodology
+// == Methodology
 
-- Run individual models - done
-- Run BioMedCLIP with more specialised features
-- Do hybrid gating between MedCLIP and BioMedCLIP - use different concept sets - only modify asso_opt.py file
-- CLIP explainability - https://colab.research.google.com/github/hila-chefer/Transformer-MM-Explainability/blob/main/CLIP_explainability.ipynb#scrollTo=3ogYpvQAAH4s
+// - Run individual models - done
+// - Run BioMedCLIP with more specialised features
+// - Do hybrid gating between MedCLIP and BioMedCLIP - use different concept sets - only modify asso_opt.py file
+// - CLIP explainability - https://colab.research.google.com/github/hila-chefer/Transformer-MM-Explainability/blob/main/CLIP_explainability.ipynb#scrollTo=3ogYpvQAAH4s
 
-If there's time:
+// If there's time:
 
-- Linear probe NIH-XRay
-- Apply best method from above
+// - Linear probe NIH-XRay
+// - Apply best method from above
 
 // = Results
 
@@ -570,19 +582,13 @@ If there's time:
 //   ),
 // ) <individual-model-results>
 
-= 
 
 // Add bibliography and create Bibiliography section
 #bibliography("bibliography.bib")
 
 // Create appendix section
 #show: arkheion-appendices
-=
 
-== Prompt Generation
-
-
-== Ablation Study on Mixture-of-Experts
 
 // #figure(
 //   caption: [Shot-by-Shot Results],
@@ -717,41 +723,41 @@ If there's time:
 // )
 // )
 
-#figure(
-  caption: [Shot-by-Shot Results],
-  table(
-    columns: 13,
-    align: (left, center, center, center, center, center, center, center, center, center, center, center, center),
-    stroke: none,
-    toprule,
-    table.header(
-      [*Arch.*],
-      table.cell(colspan: 6, align: center)[*Validation Accuracy*],
-      table.cell(colspan: 6, align: center)[*Test Accuracy*]
-    ),
-    midrule,
-    [],
-    [1], [2], [4], [8t], [16], [All],
-    [1], [2], [4], [8], [16], [All],
-    midrule,
-    [G (PC)],
-    [0.230], [0.359], [0.244], [0.345], [*0.546*], [—],
-    [0.2239], [0.3811], [0.2338], [0.3194], [*0.5284*], [—],
-    [G (OC)],
-    [0.335], [0.312], [0.308], [0.323], [0.530], [0.810],
-    [0.3095], [0.3443], [0.2915], [0.3114], [0.540], [0.769],
-    [S],
-    [0.250], [0.388], [*0.494*], [*0.630*], [0.528], [—],
-    [0.2716], [*0.40*], [*0.488*], [*0.617*], [0.5234], [0.7503],
-    [MoE (st.)],
-    [0.314], [0.464], [0.248], [0.439], [0.464], [0.792],
-    [0.2806], [0.4806], [0.2726], [0.4289], [0.4508], [*0.772*],
-    [MoE (st.)],
-    [*0.482*], [*0.494*], [0.248], [0.346], [0.539], [0.786],
-    [*0.458*], [*0.502*], [0.2348], [0.3423], [0.5114], [0.7592],
-    botrule
-  )
-)
+// #figure(
+//   caption: [Shot-by-Shot Results],
+//   table(
+//     columns: 13,
+//     align: (left, center, center, center, center, center, center, center, center, center, center, center, center),
+//     stroke: none,
+//     toprule,
+//     table.header(
+//       [*Arch.*],
+//       table.cell(colspan: 6, align: center)[*Validation Accuracy*],
+//       table.cell(colspan: 6, align: center)[*Test Accuracy*]
+//     ),
+//     midrule,
+//     [],
+//     [1], [2], [4], [8t], [16], [All],
+//     [1], [2], [4], [8], [16], [All],
+//     midrule,
+//     [G (PC)],
+//     [0.230], [0.359], [0.244], [0.345], [*0.546*], [—],
+//     [0.2239], [0.3811], [0.2338], [0.3194], [*0.5284*], [—],
+//     [G (OC)],
+//     [0.335], [0.312], [0.308], [0.323], [0.530], [0.810],
+//     [0.3095], [0.3443], [0.2915], [0.3114], [0.540], [0.769],
+//     [S],
+//     [0.250], [0.388], [*0.494*], [*0.630*], [0.528], [—],
+//     [0.2716], [*0.40*], [*0.488*], [*0.617*], [0.5234], [0.7503],
+//     [MoE (st.)],
+//     [0.314], [0.464], [0.248], [0.439], [0.464], [0.792],
+//     [0.2806], [0.4806], [0.2726], [0.4289], [0.4508], [*0.772*],
+//     [MoE (st.)],
+//     [*0.482*], [*0.494*], [0.248], [0.346], [0.539], [0.786],
+//     [*0.458*], [*0.502*], [0.2348], [0.3423], [0.5114], [0.7592],
+//     botrule
+//   )
+// )
 // 
 // #figure(
 //   caption: [Shot-by-Shot Results],
