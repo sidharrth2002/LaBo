@@ -73,7 +73,6 @@ class AssoConceptMoE(pl.LightningModule):
             self.log(f"{stage}_gate_max", max_gate)
             self.log(f"{stage}_gate_min", min_gate)
 
-            # Optionally, log histogram to wandb if desired:
             if self.logger and hasattr(self.logger.experiment, "log"):
                 self.logger.experiment.log(
                     {

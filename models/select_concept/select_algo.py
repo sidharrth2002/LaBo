@@ -1,3 +1,5 @@
+import json
+import os
 import torch as th
 import random
 from tqdm import tqdm
@@ -123,47 +125,109 @@ def plot(features, selected_idx, filename):
     plt.scatter(x_selected, y_selected, s = 10, c ="red", alpha=1)
     plt.savefig('{}.png'.format(filename))
 
-
 def submodular_select(img_feat, concept_feat, n_shots, concept2cls, num_concepts, num_images_per_class, submodular_weights, *args):
     from apricot import CustomSelection, MixtureSelection, FacilityLocationSelection
     assert num_concepts > 0
     num_cls = len(num_images_per_class)
     
     all_mi_scores, _ = mi_score(img_feat, concept_feat, n_shots, num_images_per_class)
-    selected_idx = []
     num_concepts_per_cls = int(np.ceil(num_concepts / num_cls))
-
+    
     def mi_based_function(X):
         return X[:, 0].sum()
     
     mi_selector = CustomSelection(num_concepts_per_cls, mi_based_function)
     distance_selector = FacilityLocationSelection(num_concepts_per_cls, metric='cosine')
-
+    
     mi_score_scale = submodular_weights[0]
-    facility_weight = submodular_weights[-1]
+    facility_weight = submodular_weights[1]
+    data_identifier = args[2]
     
     if mi_score_scale == 0:
         submodular_weights = [0, facility_weight]
     else:
         submodular_weights = [1, facility_weight]
-
+    
     concept2cls = th.from_numpy(concept2cls).long()
+    print(concept2cls)
+    concepts = args[0]
+    classes = args[1]
+    
+    selected_per_class = {}
+    
     for i in tqdm(range(num_cls)):
         cls_idx = th.where(concept2cls == i)[0]
-
-        if len(cls_idx) <= num_concepts_per_cls:
-            selected_idx.extend(cls_idx)
-        else:
-            mi_scores = all_mi_scores[cls_idx] * mi_score_scale
-
-            current_concept_features = concept_feat[cls_idx]
-            augmented_concept_features = th.hstack([th.unsqueeze(mi_scores, 1), current_concept_features]).numpy()
-            selector = MixtureSelection(num_concepts_per_cls, functions=[mi_selector, distance_selector], weights=submodular_weights, optimizer='naive', verbose=False)
+        if len(cls_idx) == 0:
+            selected_per_class[i] = {'indices': [], 'scores': []}
+            continue
             
-            selected = selector.fit(augmented_concept_features).ranking
-            selected_idx.extend(cls_idx[selected])
+        # Compute scaled MI scores for the concepts in class i
+        score_cls = all_mi_scores[cls_idx] * mi_score_scale
+        
+        if len(cls_idx) <= num_concepts_per_cls:
+            # Sort the entire group for this class in descending order by score
+            sorted_scores, order = th.sort(score_cls, descending=True)
+            sorted_indices = cls_idx[order]
+            selected_per_class[classes[i]] = {'concepts': concepts[sorted_indices].tolist(), 'scores': sorted_scores.tolist()}
+        else:
+            current_concept_features = concept_feat[cls_idx]
+            augmented_concept_features = th.hstack([th.unsqueeze(score_cls, 1), current_concept_features]).numpy()
+            selector = MixtureSelection(num_concepts_per_cls, functions=[mi_selector, distance_selector],
+                                         weights=submodular_weights, optimizer='naive', verbose=False)
+            selected_order = selector.fit(augmented_concept_features).ranking
+            selected_concepts = cls_idx[selected_order]
+            selected_scores = score_cls[selected_order]
+            selected_per_class[classes[i]] = {'concepts': concepts[selected_concepts].tolist(), 'scores': selected_scores.tolist()}
+    
+    print(selected_per_class)
+    
+    # save to file
+    with open(f'{data_identifier}_selected_per_class.json', 'w') as f:
+        json.dump(selected_per_class, f)
+    
+    os._exit(0)
+    return selected_per_class
 
-    return th.tensor(selected_idx)
+# def submodular_select(img_feat, concept_feat, n_shots, concept2cls, num_concepts, num_images_per_class, submodular_weights, *args):
+#     from apricot import CustomSelection, MixtureSelection, FacilityLocationSelection
+#     assert num_concepts > 0
+#     num_cls = len(num_images_per_class)
+    
+#     all_mi_scores, _ = mi_score(img_feat, concept_feat, n_shots, num_images_per_class)
+#     selected_idx = []
+#     num_concepts_per_cls = int(np.ceil(num_concepts / num_cls))
+
+#     def mi_based_function(X):
+#         return X[:, 0].sum()
+    
+#     mi_selector = CustomSelection(num_concepts_per_cls, mi_based_function)
+#     distance_selector = FacilityLocationSelection(num_concepts_per_cls, metric='cosine')
+
+#     mi_score_scale = submodular_weights[0]
+#     facility_weight = submodular_weights[-1]
+    
+#     if mi_score_scale == 0:
+#         submodular_weights = [0, facility_weight]
+#     else:
+#         submodular_weights = [1, facility_weight]
+
+#     concept2cls = th.from_numpy(concept2cls).long()
+#     for i in tqdm(range(num_cls)):
+#         cls_idx = th.where(concept2cls == i)[0]
+
+#         if len(cls_idx) <= num_concepts_per_cls:
+#             selected_idx.extend(cls_idx)
+#         else:
+#             mi_scores = all_mi_scores[cls_idx] * mi_score_scale
+
+#             current_concept_features = concept_feat[cls_idx]
+#             augmented_concept_features = th.hstack([th.unsqueeze(mi_scores, 1), current_concept_features]).numpy()
+#             selector = MixtureSelection(num_concepts_per_cls, functions=[mi_selector, distance_selector], weights=submodular_weights, optimizer='naive', verbose=False)
+            
+#             selected = selector.fit(augmented_concept_features).ranking
+#             selected_idx.extend(cls_idx[selected])
+
+#     return th.tensor(selected_idx)
 
 
 def random_select(img_feat, concept_feat, n_shots, concept2cls, num_concepts, num_images_per_class, submodular_weights, *args):
