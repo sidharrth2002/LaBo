@@ -1,3 +1,9 @@
+# Bottled Brilliance: Bottled Brilliance: Gated Mixture of Experts for Biomedical Explainability
+
+Sidharrth Nagappan
+
+Codebase is built on top of the original paper's code:
+
 # LaBo
 Code for the CVPR 2023 paper ["Language in a Bottle: Language Model Guided Concept Bottlenecks for Interpretable Image Classification"](https://arxiv.org/abs/2211.11158)
 
