@@ -240,3 +240,80 @@ abstract = {Computer-aided diagnosis for the reliable and fast detection of coro
   url = 	 {https://proceedings.mlr.press/v119/koh20a.html},
   abstract = 	 {We seek to learn models that we can interact with using high-level concepts: if the model did not think there was a bone spur in the x-ray, would it still predict severe arthritis? State-of-the-art models today do not typically support the manipulation of concepts like "the existence of bone spurs", as they are trained end-to-end to go directly from raw input (e.g., pixels) to output (e.g., arthritis severity). We revisit the classic idea of first predicting concepts that are provided at training time, and then using these concepts to predict the label. By construction, we can intervene on these concept bottleneck models by editing their predicted concept values and propagating these changes to the final prediction. On x-ray grading and bird identification, concept bottleneck models achieve competitive accuracy with standard end-to-end models, while enabling interpretation in terms of high-level clinical concepts ("bone spurs") or bird attributes ("wing color"). These models also allow for richer human-model interaction: accuracy improves significantly if we can correct model mistakes on concepts at test time.}
 }
+
+@article{biomedclip,
+author = {Sheng Zhang  and Yanbo Xu  and Naoto Usuyama  and Hanwen Xu  and Jaspreet Bagga  and Robert Tinn  and Sam Preston  and Rajesh Rao  and Mu Wei  and Naveen Valluri  and Cliff Wong  and Andrea Tupini  and Yu Wang  and Matt Mazzola  and Swadheen Shukla  and Lars Liden  and Jianfeng Gao  and Angela Crabtree  and Brian Piening  and Carlo Bifulco  and Matthew P. Lungren  and Tristan Naumann  and Sheng Wang  and Hoifung Poon },
+title = {A Multimodal Biomedical Foundation Model Trained from Fifteen Million Image–Text Pairs},
+journal = {NEJM AI},
+volume = {2},
+number = {1},
+pages = {AIoa2400640},
+year = {2025},
+doi = {10.1056/AIoa2400640},
+
+URL = {https://ai.nejm.org/doi/full/10.1056/AIoa2400640},
+eprint = {https://ai.nejm.org/doi/pdf/10.1056/AIoa2400640}
+,
+    abstract = { BiomedCLIP is a fully open-access foundation model that achieves state-of-the-art performance on various biomedical tasks, paving the way for transformative multimodal biomedical discovery and applications. }
+}
+
+@inproceedings{CLIP,
+  author       = {Alec Radford and
+                  Jong Wook Kim and
+                  Chris Hallacy and
+                  Aditya Ramesh and
+                  Gabriel Goh and
+                  Sandhini Agarwal and
+                  Girish Sastry and
+                  Amanda Askell and
+                  Pamela Mishkin and
+                  Jack Clark and
+                  Gretchen Krueger and
+                  Ilya Sutskever},
+  editor       = {Marina Meila and
+                  Tong Zhang},
+  title        = {Learning Transferable Visual Models From Natural Language Supervision},
+  booktitle    = {Proceedings of the 38th International Conference on Machine Learning,
+                  {ICML} 2021, 18-24 July 2021, Virtual Event},
+  series       = {Proceedings of Machine Learning Research},
+  volume       = {139},
+  pages        = {8748--8763},
+  publisher    = {{PMLR}},
+  year         = {2021},
+  url          = {http://proceedings.mlr.press/v139/radford21a.html},
+  timestamp    = {Wed, 25 Aug 2021 17:11:17 +0200},
+  biburl       = {https://dblp.org/rec/conf/icml/RadfordKHRGASAM21.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{blackbox,
+title = {Medical artificial intelligence and the black box problem: a view based on the ethical principle of “do no harm”},
+journal = {Intelligent Medicine},
+volume = {4},
+number = {1},
+pages = {52-57},
+year = {2024},
+issn = {2667-1026},
+doi = {https://doi.org/10.1016/j.imed.2023.08.001},
+url = {https://www.sciencedirect.com/science/article/pii/S2667102623000578},
+author = {Hanhui Xu and Kyle Michael James Shuttleworth},
+keywords = {Medical artificial intelligence, Black box problem, Do no harm, Paternalism},
+abstract = {One concern about the application of medical artificial intelligence (AI) regards the “black box” feature which can only be viewed in terms of its inputs and outputs, with no way to understand the AI's algorithm. This is problematic because patients, physicians, and even designers, do not understand why or how a treatment recommendation is produced by AI technologies. One view claims that the worry about black-box medicine is unreasonable because AI systems outperform human doctors in identifying the disease. Furthermore, under the medical AI-physician-patient model, the physician can undertake the responsibility of interpreting the medical AI's diagnosis. In this study, we focus on the potential harm caused by the unexplainability feature of medical AI and try to show that such possible harm is underestimated. We will seek to contribute to the literature from three aspects. First, we appealed to a thought experiment to show that although the medical AI systems perform better on accuracy, the harm caused by medical AI's misdiagnoses may be more serious than that caused by human doctors’ misdiagnoses in some cases. Second, in patient-centered medicine, physicians were obligated to provide adequate information to their patients in medical decision-making. However, the unexplainability feature of medical AI systems would limit the patient's autonomy. Last, we tried to illustrate the psychological and financial burdens that may be caused by the unexplainablity feature of medical AI systems, which seems to be ignored by the previous ethical discussions.}
+}
+
+@Article{Rudin2019,
+author={Rudin, Cynthia},
+title={Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead},
+journal={Nature Machine Intelligence},
+year={2019},
+month={May},
+day={01},
+volume={1},
+number={5},
+pages={206-215},
+abstract={Black box machine learning models are currently being used for high-stakes decision making throughout society, causing problems in healthcare, criminal justice and other domains. Some people hope that creating methods for explaining these black box models will alleviate some of the problems, but trying to explain black box models, rather than creating models that are interpretable in the first place, is likely to perpetuate bad practice and can potentially cause great harm to society. The way forward is to design models that are inherently interpretable. This Perspective clarifies the chasm between explaining black boxes and using inherently interpretable models, outlines several key reasons why explainable black boxes should be avoided in high-stakes decisions, identifies challenges to interpretable machine learning, and provides several example applications where interpretable models could potentially replace black box models in criminal justice, healthcare and computer vision.},
+issn={2522-5839},
+doi={10.1038/s42256-019-0048-x},
+url={https://doi.org/10.1038/s42256-019-0048-x}
+}
+
