@@ -1,350 +1,200 @@
-Pink hues
-Pink
-Color variation from pink to red
-Red
-Size variation: The size of actinic keratoses can vary, typically ranging from a few millimeters to two centimeters, contributing to lesion assessment.
-Pink areas
-Sandpaper-like roughness
-Redness
-Keratin scale
+Radiological appearance progression over time
+Patchy Infiltrates
+Nodularity
+Crazy Paving Pattern
+Upper lobe involvement
+Ground-Glass Opacity (GGO)
+Atoll sign
+Vascular enlargement in affected areas
+Interstitial Changes
+Density variations
+Pulmonary nodule or mass
+Reverse Halo Sign
+Peripheral ground-glass
+Bilateral patchy shadows
+Lobar collapse
+Absence of significant lymphadenopathy
+Lung segment atelectasis
+Hazy regions
+Pleural effusions
+Fibrotic changes (in later stages)
+Ill-defined densities
+Lobar involvement
+Air bronchogram presence
+Vascular congestion
+Focal lesions
+Subpleural bands
+Inverted halo sign
+Lymph node enlargement
+Patchy Organizing Pneumonia
+Multifocal patchy opacities
+Patchy patterns
+Diffuse chest infiltrates
+Pleuroparenchymal band
+Increased radiographic opacity
+Lung field asymmetry
+Air-space consolidation
+Zonal predominance
+Mediastinal Lymphadenopathy
+Interstitial markings
+Crazy paving appearance
+Lobar pneumonia appearance
+Lobar or segmental distribution
+Lung Periphery Changes
+Traction Bronchiectasis
+Presence of crazy paving pattern
+Vascular Thickening
+Alveolar filling
+Reticulations
+Cystic changes
+Lower Lobe Predominance
+Comparison with historical X-Rays for progression pattern
+Patchy infiltrates
+non-uniform
+Silhouette sign
+Fuzzy borders of lobes
+Crazy-paving pattern
+Mosaic perfusion
 Indistinct borders
-Progression to squamous cell carcinoma potential
-Hyperkeratosis
-Sandpaper-like feel
-Color variation (pink, red, brown)
-Fine, thin scales
-Non-uniform distribution
-Scaly patches or plaques
-Reddish areas
-Red or brownish patches
-Dermal elastosis
-Rough and scaly patches
-Scaly papules
-Superficial dermal inflammation
-Presence of hyperkeratosis
-Sun-damage indicators: Presence of additional skin changes from chronic sun exposure, such as solar elastosis (yellowing of skin due to damaged elastic tissue).
-Scaly texture: Actinic keratoses often present as rough, scaly patches on the skin, which can be captured as a texture feature within dermatoscopic images.
-Small diameter (<1cm)
-Pale or white lesions
-Well-circumscribed lesions
-Thin plaque-like appearance
-Ill-defined borders
-Scaly texture
-Erythema: Redness on the skin surface indicative of inflammation.
-Reddish patches or lesions often with distinct edges
-Thin plaque formation: Actinic keratoses can form thin, flat plaques that are slightly elevated from the surrounding skin.
-Focal keratin
-Visual Concept 1: Erythematous Base - A red to pink hue observed in the actinic keratosis lesion, indicating inflammation or increased vasculature.
-Visual Concept 5: Sun-damaged Background - Skin surrounding the lesion may appear more yellowish or show uneven pigmentation due to chronic sun exposure.
-Color variation including red, pink, or tan shades
-Erythematous patches or plaques: Reddish or pink areas that may be flat or slightly elevated, often with a rough texture.
-Solar elastosis: Increased elastin in the dermis due to prolonged sun exposure, often giving the skin a thickened, yellowish, or leathery look.
-Yellowish
-Raised plaques
-Erythematous plaque or patch
-Discrete or multiple neoplastic lesions
-Scaly white surface
-Ulcerated areas with distinct redness
-Irregular or indistinct borders
-Brown Macules
-Adhesion of hair follicles
-Shiny white streaks
-Dark pink
-Light red
-Pinkish hue
-Pinkish
-Light pink
-Blue-grey ovoid nests: Rounded, dense, blue-grey structures seen within the lesion.
-Radiating Streaks
-Blue
-Presence of arborizing vessels
-Pink, red, or white patches
-Scalloped borders
-Blue-black areas due to melanin presence in pigmented BCC
-Telangiectasia: presence of small, visible blood vessels, often found in basal cell carcinoma.
-Pearl-like edges
-Central ulceration: A noticeable depression or crater in the center of the lesion, sometimes covered by a crust or scab.
-Surface texture: glossy, waxy, or translucent surface appearance, common in basal cell carcinoma.
-Erosions
-White shiny structures
-Spiculated borders
-Small nodular or dome-shaped structures
-Black
-Rolled borders
-Translucent
-Milia-like cysts
-Shiny surface
-Central ulceration with rolled border appearance
-Size and scale: size of the lesion in relation to surrounding skin landmarks, noting any rapid changes in dimensions.
-Smooth surface
-Border irregularity: indistinct, blurry, or ragged edges of the lesion border, which is commonly observed in basal cell carcinoma.
-Peripheral rim of brown: Darker pigmentation at the edge of a lesion forming a conspicuous border.
-Pearly Appearance
-Pearly appearance
-Multilobular pattern
-Scar-like area
-Central ulceration or indentation
-Pearl-like nodules
-Pearly white
-Translucency
-Micro-nodules: Identify smaller nodular formations on the lesion surface.
-Asymmetry
-Yellowish hue in some variants
-Grayish blue
-Pigment network: A net-like appearance of light colored lines over a pigmented background.
-Lobular structures with varying size
-Ulceration: Identify any sores or open wounds within the lesion, which may appear as small crusted or oozing areas.
-Waxy texture
-Slightly translucent skin lesions
-Ivory white
-Waxy
-Presence of hairpin vessels
-Moth-eaten borders
-Border Sharpness
-Grey-Blue Components: The presence of grey-blue pigmentation, often indicative of pigmentation in the superficial dermis, commonly seen in acanthosis nigricans-like lesions.
-Milia-like Cysts: Whitish small bumps resembling milia, but possibly filled with keratin.
-Horn cysts or milia-like cysts visible on the surface
-Diameter: Often these lesions are smaller than malignant ones, usually less than 6mm in diameter.
-Keratin Pearls
-Uniform color pattern
-Diameter: Measure the size of the lesion (usually larger lesions over 5mm are of interest).
-Presence of Milia-like Cysts
-Presence of milia-like cysts
-Homogeneous Blue Areas: The presence of diffuse, well-circumscribed blue areas without a recognizable pattern, indicating pigmentation retained in the stratum corneum or within keratin-filled cysts.
-Lack of significant red color: these lesions typically do not exhibit prominent red areas, distinguishing them from other types of lesions like melanoma.
-Scalloped border
-Comedo-like Openings: Blackhead-like spots forming due to follicular plugging.
-White color
-Flatness
-Color Homogeneity
-Milia-like Cyst Presence
-Color Uniformity
-Comedo-like openings
-Color uniformity
+gray
+Lobar pneumonia characteristic
+Reticular pattern suggesting interstitial involvement
+Blurry or fuzzy regions in the image
+Honeycombing
+Ill-defined opacification
+Fibrotic bands
+Hilar Enlargement
+Consolidation in alveoli spaces
+Ill-defined Borders
+Density Variation
+Lobar versus multi-lobar involvement
+Patchy shadows
+filmy
+Pleural effusion indication
 White
-Keratin pseudo-horn cysts
-Seborrheic Keratosis-like Features
-Hairpin Vessels: Presence of looped or curved blood vessels visible on the surface.
-Diameter: they can vary in size significantly, though smaller lesions typically align with benign features.
-Hairpin-like Blood Vessels
-Homogeneous color distribution
-Absence of multiple colors
-Furrow pattern
-Well-demarcated borders: the edges of the lesion are typically well-defined and distinct from the surrounding skin.
-Symmetry: benign keratosis-like lesions typically exhibit symmetry in shape when divided along multiple axes.
-Yellowness or yellow hue
-Grayish
-Consistent margin
-Color variegation with shades of brown, black, grey, or tan
-White and waxy
-Milial cysts: small, white cyst-like structures that resemble tiny grains.
-Absence of blue-gray veil
-Horny Cysts: Small, round, white or yellow bumps, potentially indicative of keratin-filled cysts.
-Yellow
-Milial Cysts: Small, round whitish structures that appear due to the presence of intraepidermal keratin cysts, typically dotting the lesion.
-Central scar-like area
-Mottled color pattern
-Color Variability
-Erythema: Check for any redness or inflammation around or within the lesion.
-Milky red areas
-Uniform color
-Pinkish tone
-Uniform color distribution
-Absence of blue-white veil
-Regular borders
-Dermal Nodule: Presence of a raised, firm, and fibrous nodule beneath the skin.
-Uniform border
-Pinkish-brown hue
-Dome-shaped nodule
-Regular border
-Distribution of Colors
-Smooth surface texture
-Brown hues
-Globular structures
-Regular border shape
-Sparse network of blood vessels
-Peripheral coloration gradation
-Color variation with uniform distribution
-Presence of a white scar-like patch
-Central White Scar-like Area
-Dermatofibroma nodule
-Central white scar-like area
-Skin Colored/Nodular Areas
-Central white scar-like patch
-Peripheral lighter ring
-Multiple Colors Presence
-Elevated lesion
-Regression Structures: Not typically observed.
-Scale/Crust: Generally absent in dermatofibroma.
-Peripheral erythema
-Cobblestone Pattern
-Sparse presence of network pattern
-Elevated or dome-shaped
-Absence of atypical vascular patterns
-Uniform pigment distribution
-Firm texture
-Fade out pattern
-Presence of scales
-Veil and Halo Patterns
-Grey
-Circular lesion
-Elevated dome shape
-Brownish tone
-Symmetrical lesion shape
-Homogeneity of structure
-Firm nodule
-Pigment network absence or presence
-Symmetry of the lesion
-Homogeneous coloration
-Homogenous color within the lesion
-Peripheral rim of hyperpigmentation
-Blue-Black
-Peripheral black dots or clods indicating potential malignancy
-Reddish hues around the periphery
-Borders - Regularity
-Diameter: Measure of the size of the nevus, often compared to a set threshold (usually greater than 6mm being suspicious).
-Reddish hue
-Uniformly pink
-Diameter: Measure the size of the nevus. Melanomas are often larger than 6 millimeters in diameter, although melanomas can also be smaller at the time of diagnosis.
-Lines parallel
-Presence of a blue-white color within the lesion suggestive of deeper skin involvement
-Regression Structures: Look for signs of regression such as white scar-like areas or blue areas which may suggest melanoma.
-Hair Growth Patterns
-Streaks
-Diameter of the lesion, especially if larger than 6mm
-Border sharpness
-Elevation: Assess the elevation or flatness of the mole. Benign nevi can be slightly raised, whereas a change in elevation can be a sign of malignancy.
-Elevation: Checking if the nevus is raised above the skin surface and noting any specific areas of elevation.
-Uniformly red
-Small diameter compared to atypical lesions
-Borders - Sharpness
-Evidence of evolving changes in size, shape, or color over time
-Regression Structures
-Diameter: Generally, nevi are smaller in diameter compared to malignant lesions, often less than 6mm.
-Regression structures
-Streaks presence
-Border: Examine the edges of the lesion. Irregular, notched, or blurred borders can be a sign of melanoma, while smoother, well-demarcated edges are typical of benign nevi.
-Homogeneity of color distribution
-Color Variation: Analysis of the multiple shades present within the nevus, including browns, blacks, reds, and potentially even areas of white or blue.
-Grey-blue veil
-Homogeneity of color
-Color homogeneity
-Size/diameter of lesion
-Patterns of network distortion or areas of obliteration
-Surface Texture: Observation of the texture of the nevus, e.g., smooth, scaly, or rough.
-Blue-white veil presence
-Presence of streaks
-Asymmetry in color distribution
-Diameter: Measure the size of the lesion to determine if it exceeds common size thresholds for benign lesions.
-Color variations
-Vascular Pattern: Identify any visible blood vessels within the lesion. An irregular vascular pattern might be indicative of melanoma.
-Diameter variation: The diameter of melanocytic nevi can vary, but they generally remain within a certain size range (typically less than 6 mm).
-Network structures
-Peripheral Black Streaks
-Presence of Dots or Globules: Identification of dots or round structures often indicating nests of melanocytes which are grouped within the lesion.
-Blueish hue
-Symmetry: Assessment of the symmetry of the nevus, often characterized by how evenly features are distributed across the lesion.
-Symmetry: Evaluate the symmetry of the mole. Asymmetrical shapes may suggest malignancy, while symmetrical shapes are generally benign.
-Presence of milial cysts
-Variegated color patterns
-Presence of comedo-like openings
-Blurred edges
-Pseudopods
-Satellite Lesions: Small nodules (satellite) may be present around the primary melanoma, indicating metastasis.
-Radial streaming or pseudopods
-Evolution: Changes in size, shape, or color of existing moles or skin lesions over time, indicating potential malignancy.
-Asymmetry: The melanoma lesion may lack symmetry, meaning one half of the mole does not match the other half in shape.
-Black regions within the nevus
-Radial streaming
-Stratification of colors
-Periphery prominence
-Diameter: The lesion is larger than 6mm, although melanomas can be smaller when first detected.
-Pigment dots or clods: Randomly distributed or clustered pigment dots/clods that vary in size and color, indicating active melanoma growth.
-Scattered Cherries
-Diameter: Measure if the lesion is larger than 6mm, although some melanomas can be smaller.
-Regression structures: Areas within the lesion that appear scar-like or hypopigmented, indicating the immune system's response to the melanoma.
-Architecture disruption
-John Doe pattern: rare unique findings specific to melanoma in HAM10000 dataset
-Areas of pink or red
-Diameter: Lesions are often larger than 6 mm (about the size of a pencil eraser) when diagnosed, although they may be smaller when first detected.
-Whitish veil
-Diameter: lesions larger than 6mm
-Erosion
-Blue-gray veil appearance
-Red coloration
-Elevation: The lesion's surface may be raised when compared to the surrounding skin, indicating vertical growth.
-Evolution over time
-Red hues indicating erythema
-Evolution and change over time
-Elevated areas compared to surrounding skin
-Presence of atypical moles
-Ulceration or open sores on the lesion
-Evolution: changes in size, shape, color, or elevation over time
-Crustiness
-Red hues indicating inflammation
-Globules: small, evenly spaced spots or dots within the lesion
-Color Variations
-Blue-grey areas
-Blue-grey
-Yellowish hue
-Streaks at the periphery
-Evolving: Observe any change in size, shape or color over time.
-Multicolored patches
-Blue Whitish Veil: blue-white structures indicative of deep melanin within the lesion
-Asymmetrical color distribution
-Diameter > 6mm
-Presence of multiple colors
-Boundary Irregularity
-Light brown hues
-Evolution or change over time
-Pseudopods: bulbous projections from the lesion
-Hairpin vessels
-Ruby red
-Background coloration
-Pink hue
-Bright red
-Presence of shiny white streaks (chrysalis structures)
-Erythematous pink background
-Red lines
-Color variation (red, pink, purple hues)
-Dark red color
-Serpentine vessels
-Corkscrew vessels
-Glomerular vessels
-Thin hairpin vessels
-Crown vessels
-Reddish-purple
-Centrifugal vessel pattern
-Regular Borders
-Arborizing (treelike) vessels
-Presence of blue-black globules
-Purple or Red Tint
-Globular vessels
-Irregular blood vessels
-Arborizing vessels
-Spoked wheel pattern
-Bluish tint in deeper lesions
-Crowned vessels
-Clear borders
-Lacunae: These are well-defined, oval or polygonal, dark red to purple areas within the lesion, typically seen in hemangiomas.
-Blanching with Pressure
-Yellow: This could represent lipid accumulation or a particular degenerative change in the lesion.
-Cherry angiomas: These are small, bright red or purple spots that represent clustered abnormal blood vessels.
-Looped vessels
-Linear vessels
-Homogeneous red hue: This represents a uniform red color across the lesion, indicating a vascular nature.
-Globular Structures
-Linear irregular vessels
-Pinkish to reddish dots or clods representing blood vessels
-Vessel density
-Size and diameter of the lesion
-Purple: Can suggest a more significant blood pooling or vascular anomaly.
-Vascular blush
-Networked vessel pattern
-Purple or blue hue
-Atypical blood vessels
-Red color variation
-Crown vessel pattern
-Red color pattern: Vascular lesions often have a predominant red color due to the presence of blood vessels.
-Blue: Typically indicates deeper blood vessels or cyanosis within the lesion.
-Linear and serpentine vessels: Thin, wavy, or curved red lines represent blood vessels traversing the lesion.
+opaque
+Mediastinal widening
+Blurry margins
+Irregular shadows on the X-ray
+Patchy consolidation
+Vascular crowding
+Lobular distribution
+Air bronchogram sign
+Sign of interstitial edema
+Alveolar filling patterns
+Foggy or cloud-like patterns
+Focal opacification
+Hazy borders
+Patchy or diffuse white spots
+Displacement of pulmonary vessels
+cloudy
+Globular patterns
+Increased radiodensity
+Involvement of specific lobes
+Reticulonodular patterns
+Silhouette sign with bordering structures
+patchy
+Mild Blurring
+Bilateral involvement
+Cavitations
+dense
+Stable vertebrae
+Hilar Shadows
+Absence of calcifications in lung tissue
+Gray tones
+No Opacities
+Ground Glass Opacity
+Defined vascular markings
+Black
+Sharp costophrenic angles
+Balanced heart silhouette
+Diaphragms are dome-shaped and not flattened
+Intact ribs
+Nodules
+Transparent areas indicating healthy lung tissue
+Hyperinflation
+Symmetrical clavicles
+Dense white spots might indicate foreign materials or metal implants
+Mediastinal Contours
+No masses or tumors
+Mediastinum Width
+Sharp Heart Border
+Stable bone density with no deformations
+Aortic Arch Contour
+No foreign objects visible
+Lung Field Uniformity
+Correct positioning and alignment of bones
+Overall uniformity in shading and density
+Proper rib spacing
+Fibrosis
+No enlarged lymph nodes observed
+Even distribution of pulmonary vasculature
+Infiltration
+Calcifications
+Clear heart outlines
+Blunt Costophrenic Angle
+Masses
+Visual clarity of vertebral bodies
+Clear Bronchi Visualization
+Consistent brightness
+Vertebral Column Alignment
+Proper diaphragm position
+Healthy lung fields with no opacities
+Properly aligned trachea
+Bronchiectasis
+Air Bronchogram
+No evidence of interstitial patterns
+Clear lungs
+Rib Structure Intact
+Hilum Symmetry
+Absence of atelectasis
+Hilar enlargement
+Irregular Pulmonary Vascular Markings
+Crazy paving pattern
+Mild to moderate opacity increase
+Lobar sparing
+No lobar collapse
+Hazy lung fields
+Centrilobular nodules
+Frosted glass appearance
+Bilateral Increase in Lung Opacity
+Radiographic density
+Mild alveolar filling
+Halo sign
+Tree-in-bud pattern
+white or gray patches
+Thickened bronchovascular bundles
+Pixelated Lung Fields
+Consolidation in Lobar Pattern
+Patchy opacifications
+Ground glass opacity
+Symmetric distribution
+Interstitial infiltrates
+Lower lobe predominance
+Nodular opacities
+Uniform haziness
+Reticulonodular pattern
+Honeycombing appearance
+Mosaic attenuation pattern
+Increased vascular markings
+Focal or multifocal distribution
+Patchy consolidations
+Peripheral Distribution of Lesions
+Interlobar fissure thickening
+Diffuse lung inflammation
+Patchy Shadows
+Absence of Cavitation
+Subpleural location of opacities
+Lobular patterns
+Peribronchovascular distribution
+Lower Lobe Dominance
+Air bronchogram
+consolidation
+Fibrotic changes
+Hazy opacities
+Lobar distribution of opacities
+Diffused lung opacity
+Bilateral Infiltrates
+Lack of significant lymphadenopathy
+Ground-glass opacity
+Variable lung lobe involvement
