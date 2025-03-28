@@ -294,7 +294,7 @@ class DataModule(pl.LightningDataModule):
     
 
     def select_concept(self, concept_select_fn, img_feat_train, concept_feat, n_shots, num_concepts, concept2cls, clip_ckpt, num_images_per_class, submodular_weights):
-        self.force_compute = False
+        self.force_compute = True
         
         if not self.select_idx_save_dir.exists() or (self.force_compute and not clip_ckpt):
             print('select concept')
@@ -302,7 +302,7 @@ class DataModule(pl.LightningDataModule):
             print('num_concepts', num_concepts)
             print('num_images_per_class', num_images_per_class)
             self.select_idx = concept_select_fn(img_feat_train, concept_feat, n_shots, concept2cls, 
-                                                num_concepts, num_images_per_class, submodular_weights)
+                                                num_concepts, num_images_per_class, submodular_weights, self.concepts_raw, self.cls_names, str(self.data_root.stem).split("/")[-1])
             th.save(self.select_idx, self.select_idx_save_dir)
         else:
             print('not generating again, just going to load')
