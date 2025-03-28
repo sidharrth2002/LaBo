@@ -433,9 +433,9 @@ def asso_opt_main(cfg):
     if cfg.proj_name == "ImageNet" and (cfg.n_shots == "all" or cfg.n_shots == 16):
             print("use asso concept with image feature loader")
             if cfg.model_type == "single_expert":
-                model = AssoConcept(cfg, init_weight=th.load(cfg.init_weight_path) if 'init_weight_path_generalist' in cfg else None)
+                model = AssoConcept(cfg, init_weight=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None)
             elif cfg.model_type == "moe":
-                model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path) if 'init_weight_path_generalist' in cfg else None)
+                model = AssoConceptMoEFast(cfg, init_weight_generalist=th.load(cfg.init_weight_path_generalist) if 'init_weight_path_generalist' in cfg else None)
     else:
         print("use asso concept with dot product loader, faster")
         if cfg.model_type == "single_expert":

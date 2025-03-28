@@ -205,11 +205,13 @@ class AssoConceptMoE(pl.LightningModule):
         if init_weight_generalist is None:
             self.init_weight_concept_generalist(self.concept2cls_generalist)
         else:
+            print("Using provided init weight for generalist")
             self.init_weight_generalist = init_weight_generalist
 
         if init_weight_specialist is None:
             self.init_weight_concept_specialist(self.concept2cls_specialist)
         else:
+            print("Using provided init weight for specialist")
             self.init_weight_specialist = init_weight_specialist
 
         print(f"Shape of init_weight_generalist: {self.init_weight_generalist.shape}")

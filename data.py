@@ -65,13 +65,15 @@ class DotProductDatasetMoE(Dataset):
     """
     Two separate concept sets, return two dot products: one for generalist and one for specialist
     """
-    def __init__(self, img_feat, txt_feat_generalist, txt_feat_specialist, label, on_gpu):
+    def __init__(self, img_feat_generalist, img_feat_specialist, txt_feat_generalist, txt_feat_specialist, label, on_gpu):
         print("Using MoE dot product dataset")
-        self.img_feat = img_feat
-        self.dot_product_generalist = (img_feat @ txt_feat_generalist.t())
+        # self.img_feat = img_feat
+        self.img_feat_generalist = img_feat_generalist
+        
+        self.dot_product_generalist = (img_feat_generalist @ txt_feat_generalist.t())
         self.dot_product_generalist.cuda() if on_gpu else self.dot_product_generalist
         
-        self.dot_product_specialist = (img_feat @ txt_feat_specialist.t())
+        self.dot_product_specialist = (img_feat_specialist @ txt_feat_specialist.t())
         self.dot_product_specialist.cuda() if on_gpu else self.dot_product_specialist
         
         self.labels = label.cuda() if on_gpu else label
@@ -80,7 +82,7 @@ class DotProductDatasetMoE(Dataset):
         return len(self.dot_product_generalist)
 
     def __getitem__(self, idx):
-        return self.img_feat[idx], self.dot_product_generalist[idx], self.dot_product_specialist[idx], self.labels[idx]
+        return self.img_feat_generalist[idx], self.dot_product_generalist[idx], self.dot_product_specialist[idx], self.labels[idx]
 
 
 class Dataset_with_name(Dataset):
@@ -264,6 +266,8 @@ class DataModule(pl.LightningDataModule):
         # select top k concept with smallest distanct to the class name
         _, idx = th.topk(dis, num_concept_per_cls, largest=False)
         init_weight = th.zeros((num_cls, self.num_concept))
+        print(init_weight.shape)
+        print(idx)
         init_weight.scatter_(1, idx, 1)
         th.save(init_weight, self.init_weight_save_dir)
 
@@ -544,12 +548,26 @@ class DotProductDataModuleMoE(DataModule):
         SPECIALIST_SELECT_IDX_PATH = self.data_root.joinpath('select_idx_specialist.pth')
         specialist_select_idx = th.load(SPECIALIST_SELECT_IDX_PATH)
         
+        self.img_feat_save_dir_specialist = {
+            mode: self.img_split_path.joinpath(
+                'img_feat_{}_{}_{}{}_{}.pth'.format(mode, self.n_shots, int(self.use_img_norm), int(self.use_txt_norm), 'biomedclip') if mode ==
+                'train' else 'img_feat_{}_{}{}_{}.pth'.format(mode, int(self.use_img_norm), int(self.use_txt_norm), 'biomedclip'))
+            for mode in ['train', 'val', 'test']
+        }
+        
+        # load for self.img_feat 
+        self.img_feat_specialist = {
+            mode: th.load(self.img_feat_save_dir_specialist[mode])
+            for mode in ['train', 'val', 'test']
+        }
+        
         return specialist_features, specialist_select_idx
     
     def setup(self, stage):
         self.datasets = {
             mode: DotProductDatasetMoE(
-                img_feat=self.img_feat[mode],
+                img_feat_generalist=self.img_feat[mode],
+                img_feat_specialist=self.img_feat_specialist[mode],
                 txt_feat_generalist=self.concept_feat[self.select_idx[:self.num_concept]],
                 txt_feat_specialist=self.specialist_features[self.specialist_select_idx[:self.num_concept]],
                 label=self.label[mode],
